@@ -6,7 +6,7 @@ numpy>=1.24.0
 # LLM APIs
 mistralai>=1.0.0
 openai>=1.30.0
-anthropicai>=0.28.0
+anthropic>=0.28.0
 
 # NLP Evaluation
 rouge-score>=0.1.2
