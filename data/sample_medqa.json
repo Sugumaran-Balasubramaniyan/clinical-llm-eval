@@ -1,0 +1,42 @@
+[
+  {
+    "question": "A 45-year-old man presents with chest pain radiating to the left arm, diaphoresis, and nausea. ECG shows ST elevation in leads II, III, and aVF. What is the most likely diagnosis?",
+    "answer": "Inferior ST-elevation myocardial infarction (STEMI)"
+  },
+  {
+    "question": "A patient presents with fever, productive cough, and consolidation on chest X-ray. Gram stain shows gram-positive diplococci. What is the most likely causative organism?",
+    "answer": "Streptococcus pneumoniae"
+  },
+  {
+    "question": "A 30-year-old woman presents with fatigue, weight gain, cold intolerance, and constipation. TSH is elevated, free T4 is low. What is the diagnosis?",
+    "answer": "Primary hypothyroidism"
+  },
+  {
+    "question": "A child presents with a barking cough, inspiratory stridor, and low-grade fever. What is the most likely diagnosis?",
+    "answer": "Croup (laryngotracheobronchitis)"
+  },
+  {
+    "question": "A 60-year-old smoker presents with progressive dyspnea, barrel chest, and decreased breath sounds bilaterally. Spirometry shows FEV1/FVC < 0.70. What is the diagnosis?",
+    "answer": "Chronic obstructive pulmonary disease (COPD)"
+  },
+  {
+    "question": "A patient on warfarin presents with an INR of 8.5 and minor bleeding. What is the most appropriate immediate management?",
+    "answer": "Hold warfarin and administer vitamin K orally"
+  },
+  {
+    "question": "A 25-year-old woman presents with a butterfly rash, joint pain, and positive ANA. What is the most likely diagnosis?",
+    "answer": "Systemic lupus erythematosus (SLE)"
+  },
+  {
+    "question": "A newborn develops jaundice within 24 hours of birth. The mother is blood type O, the baby is blood type A. What is the most likely cause?",
+    "answer": "ABO incompatibility hemolytic disease of the newborn"
+  },
+  {
+    "question": "A 70-year-old man presents with urinary hesitancy, decreased stream, and nocturia. PSA is elevated. What is the most likely diagnosis?",
+    "answer": "Benign prostatic hyperplasia (BPH)"
+  },
+  {
+    "question": "A patient presents with sudden onset severe headache described as the worst headache of their life. CT head is negative. What is the next step?",
+    "answer": "Lumbar puncture to rule out subarachnoid hemorrhage"
+  }
+]
