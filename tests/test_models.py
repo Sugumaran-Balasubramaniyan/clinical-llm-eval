@@ -1,31 +1,41 @@
-"""Tests for model connectors (offline/mock)."""
+"""Tests for model connectors -- import-only, no live API calls."""
 
+import sys
+import os
 import pytest
-from unittest.mock import MagicMock, patch
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
-class TestMistralConnector:
-    def test_import(self):
-        """Connector should import without errors."""
-        try:
-            from models.mistral_connector import MistralConnector
-        except ImportError:
-            pytest.skip("mistralai not installed")
+def test_mistral_connector_importable():
+    """MistralConnector should be importable without raising."""
+    try:
+        from models.mistral_connector import MistralConnector
+        assert MistralConnector is not None
+    except ImportError:
+        pytest.skip("mistralai not installed")
 
 
-class TestOpenAIConnector:
-    def test_import(self):
-        """Connector should import without errors."""
-        try:
-            from models.openai_connector import OpenAIConnector
-        except ImportError:
-            pytest.skip("openai not installed")
+def test_openai_connector_importable():
+    """OpenAIConnector should be importable without raising."""
+    try:
+        from models.openai_connector import OpenAIConnector
+        assert OpenAIConnector is not None
+    except ImportError:
+        pytest.skip("openai not installed")
 
 
-class TestAnthropicConnector:
-    def test_import(self):
-        """Connector should import without errors."""
-        try:
-            from models.anthropic_connector import AnthropicConnector
-        except ImportError:
-            pytest.skip("anthropic not installed")
+def test_anthropic_connector_importable():
+    """AnthropicConnector should be importable without raising."""
+    try:
+        from models.anthropic_connector import AnthropicConnector
+        assert AnthropicConnector is not None
+    except ImportError:
+        pytest.skip("anthropic not installed")
+
+
+def test_report_generator_importable():
+    """ReportGenerator should instantiate cleanly."""
+    from reports.report_generator import ReportGenerator
+    rg = ReportGenerator(output_dir="/tmp/test_reports")
+    assert rg is not None

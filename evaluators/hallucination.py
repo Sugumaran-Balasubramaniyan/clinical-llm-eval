@@ -1,7 +1,7 @@
 """Hallucination detector for clinical LLM responses."""
 
 import re
-from typing import Optional
+from typing import Optional, Set
 
 
 class HallucinationDetector:
@@ -13,9 +13,9 @@ class HallucinationDetector:
 
     # Medical entity patterns to extract and compare
     MEDICAL_PATTERNS = [
-        r'\b(?:mg|mcg|µg|ml|L|mmol|mmHg|bpm)\b',  # dosages/units
-        r'\b[A-Z][a-z]+(?:ine|ol|an|ide|ate|ase)\b',  # drug-like names
-        r'\b(?:type [0-9]|stage [IV]+|grade [0-9])\b',  # medical staging
+        r'\b(?:mg|mcg|\xb5g|ml|L|mmol|mmHg|bpm)\b',
+        r'\b[A-Z][a-z]+(?:ine|ol|an|ide|ate|ase)\b',
+        r'\b(?:type [0-9]|stage [IV]+|grade [0-9])\b',
     ]
 
     def detect(self, response: str, reference: str) -> bool:
@@ -34,25 +34,19 @@ class HallucinationDetector:
         if not ref_tokens:
             return False
 
-        # Key medical terms in response that are NOT in reference
         resp_only = resp_tokens - ref_tokens
-
-        # High overlap = likely faithful; many new medical terms = potential hallucination
         new_term_ratio = len(resp_only) / max(len(resp_tokens), 1)
         return new_term_ratio > 0.6
 
-    def _extract_key_terms(self, text: str) -> set[str]:
+    def _extract_key_terms(self, text: str) -> Set[str]:
         """Extract key medical terms from text."""
-        tokens = set()
+        tokens: Set[str] = set()
 
-        # Capitalised multi-word terms (likely medical entities)
         tokens.update(re.findall(r'\b[A-Z][a-z]+(?:\s[A-Z][a-z]+)*\b', text))
 
-        # Numbers with units
         for pattern in self.MEDICAL_PATTERNS:
             tokens.update(re.findall(pattern, text))
 
-        # Important lowercase medical keywords
         med_keywords = {
             'diagnosis', 'treatment', 'prognosis', 'medication',
             'surgery', 'therapy', 'infection', 'inflammation',
