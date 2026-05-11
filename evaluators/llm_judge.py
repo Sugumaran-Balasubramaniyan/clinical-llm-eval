@@ -27,11 +27,20 @@ class LLMJudgeEvaluator:
         self.judge_model = judge_model
         self._client = self._init_client()
 
-    def _init_client(self):
-        """Initialize the judge LLM client."""
+    def _init_client(self) -> Optional[object]:
+        """Initialize the judge LLM client.
+
+        Returns None if the API key is absent, a dummy placeholder,
+        or the openai package is not installed.
+        CI environments pass OPENAI_API_KEY=dummy, so this guard
+        prevents a real network call being attempted during tests.
+        """
+        api_key = os.getenv("OPENAI_API_KEY", "")
+        if not api_key or api_key.lower() == "dummy":
+            return None
         try:
             from openai import OpenAI
-            return OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+            return OpenAI(api_key=api_key)
         except ImportError:
             return None
 
@@ -43,9 +52,11 @@ class LLMJudgeEvaluator:
     ) -> float:
         """Score a clinical response using an LLM judge.
 
+        Falls back to heuristic scoring if the LLM client is unavailable.
+
         Args:
             question: The clinical question asked.
-            response: The model's response to evaluate.
+            response: The model\u2019s response to evaluate.
             reference: The ground truth reference answer.
 
         Returns:
