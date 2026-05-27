@@ -1,20 +1,24 @@
-"""ROUGE and BERTScore evaluation for LLM responses."""
+"""ROUGE score evaluator for clinical LLM responses."""
+
+from __future__ import annotations
 
 from rouge_score import rouge_scorer
 
 
 class RougeEvaluator:
-    """Computes ROUGE-L and optionally BERTScore between response and reference."""
+    """Computes ROUGE-1, ROUGE-2, and ROUGE-L scores."""
 
     def __init__(self) -> None:
-        self._scorer = rouge_scorer.RougeScorer(["rouge1", "rouge2", "rougeL"], use_stemmer=True)
+        self._scorer = rouge_scorer.RougeScorer(
+            ["rouge1", "rouge2", "rougeL"], use_stemmer=True
+        )
 
     def score(self, response: str, reference: str) -> dict[str, float]:
-        """Compute ROUGE scores.
+        """Compute ROUGE scores between response and reference.
 
         Args:
-            response: The LLM-generated response.
-            reference: The ground truth answer.
+            response: The model-generated response.
+            reference: The ground truth reference answer.
 
         Returns:
             Dict with rouge_1, rouge_2, rouge_l F1 scores.

@@ -1,5 +1,7 @@
 """LLM-as-Judge evaluator for reasoning quality scoring."""
 
+from __future__ import annotations
+
 import os
 from typing import Optional
 
@@ -28,13 +30,7 @@ class LLMJudgeEvaluator:
         self._client = self._init_client()
 
     def _init_client(self) -> Optional[object]:
-        """Initialize the judge LLM client.
-
-        Returns None if the API key is absent, a dummy placeholder,
-        or the openai package is not installed.
-        CI environments pass OPENAI_API_KEY=dummy, so this guard
-        prevents a real network call being attempted during tests.
-        """
+        """Initialize the judge LLM client. Returns None in CI (dummy key)."""
         api_key = os.getenv("OPENAI_API_KEY", "")
         if not api_key or api_key.lower() == "dummy":
             return None
@@ -44,33 +40,13 @@ class LLMJudgeEvaluator:
         except ImportError:
             return None
 
-    def score(
-        self,
-        question: str,
-        response: str,
-        reference: str,
-    ) -> float:
-        """Score a clinical response using an LLM judge.
-
-        Falls back to heuristic scoring if the LLM client is unavailable.
-
-        Args:
-            question: The clinical question asked.
-            response: The model\u2019s response to evaluate.
-            reference: The ground truth reference answer.
-
-        Returns:
-            Float score between 1.0 and 5.0.
-        """
+    def score(self, question: str, response: str, reference: str) -> float:
+        """Score a clinical response. Falls back to heuristic if no client."""
         if self._client is None:
             return self._heuristic_score(response, reference)
-
         prompt = JUDGE_PROMPT.format(
-            question=question,
-            reference=reference,
-            response=response,
+            question=question, reference=reference, response=response
         )
-
         try:
             result = self._client.chat.completions.create(
                 model=self.judge_model,
@@ -79,8 +55,7 @@ class LLMJudgeEvaluator:
                 temperature=0.0,
             )
             raw = result.choices[0].message.content.strip()
-            score = float(raw)
-            return max(1.0, min(5.0, score))
+            return max(1.0, min(5.0, float(raw)))
         except Exception:
             return self._heuristic_score(response, reference)
 

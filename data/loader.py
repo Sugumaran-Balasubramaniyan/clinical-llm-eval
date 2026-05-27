@@ -1,5 +1,7 @@
 """Dataset loader for clinical QA datasets via HuggingFace."""
 
+from __future__ import annotations
+
 from typing import Literal
 import json
 from pathlib import Path
@@ -31,22 +33,17 @@ def load_dataset(name: DatasetName = "sample", n_samples: int = 50) -> list[dict
             {"question": row["question"], "answer": row["answer"]["value"]}
             for row in ds.select(range(min(n_samples, len(ds))))
         ]
-
     elif name == "pubmedqa":
         ds = hf_load("pubmed_qa", name="pqa_labeled", split="train", trust_remote_code=True)
         samples = [
             {"question": row["question"], "answer": row["long_answer"]}
             for row in ds.select(range(min(n_samples, len(ds))))
         ]
-
     elif name == "medmcqa":
         ds = hf_load("medmcqa", split="validation", trust_remote_code=True)
         option_map = {0: "opa", 1: "opb", 2: "opc", 3: "opd"}
         samples = [
-            {
-                "question": row["question"],
-                "answer": row[option_map[row["cop"]]]
-            }
+            {"question": row["question"], "answer": row[option_map[row["cop"]]]}
             for row in ds.select(range(min(n_samples, len(ds))))
         ]
     else:
@@ -63,7 +60,6 @@ def _load_sample_data(n_samples: int) -> list[dict]:
             data = json.load(f)
         return data[:n_samples]
 
-    # Fallback inline samples
     return [
         {
             "question": "A 45-year-old man presents with chest pain radiating to the left arm, diaphoresis, and nausea. ECG shows ST elevation in leads II, III, and aVF. What is the most likely diagnosis?",

@@ -1,5 +1,7 @@
 """Report generator for evaluation results."""
 
+from __future__ import annotations
+
 import json
 from pathlib import Path
 from datetime import datetime
@@ -15,23 +17,14 @@ class ReportGenerator:
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
     def generate(self, df: pd.DataFrame) -> dict[str, str]:
-        """Generate evaluation reports from results DataFrame.
-
-        Args:
-            df: DataFrame with evaluation results.
-
-        Returns:
-            Dict mapping report type to file path.
-        """
+        """Generate evaluation reports from results DataFrame."""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        paths = {}
+        paths: dict[str, str] = {}
 
-        # Full results CSV
         csv_path = self.output_dir / f"eval_results_{timestamp}.csv"
         df.to_csv(csv_path, index=False)
         paths["csv"] = str(csv_path)
 
-        # Summary JSON
         summary = self._build_summary(df)
         json_path = self.output_dir / f"eval_summary_{timestamp}.json"
         with open(json_path, "w") as f:
@@ -42,8 +35,7 @@ class ReportGenerator:
 
     def _build_summary(self, df: pd.DataFrame) -> dict:
         """Build a summary statistics dict per model."""
-        summary = {"timestamp": datetime.now().isoformat(), "models": {}}
-
+        summary: dict = {"timestamp": datetime.now().isoformat(), "models": {}}
         for model, group in df.groupby("model"):
             summary["models"][model] = {
                 "n_samples": len(group),
@@ -52,5 +44,4 @@ class ReportGenerator:
                 "hallucination_rate": round(group["hallucination"].mean(), 4),
                 "safety_flag_rate": round(group["safety_flag"].mean(), 4),
             }
-
         return summary
