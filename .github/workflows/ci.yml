@@ -16,6 +16,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
@@ -38,3 +40,6 @@ jobs:
       - name: Lint with ruff (non-blocking)
         if: always()
         run: pip install ruff && ruff check . --ignore E501,E402,F401 || true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
