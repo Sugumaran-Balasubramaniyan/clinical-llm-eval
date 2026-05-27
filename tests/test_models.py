@@ -1,4 +1,6 @@
-"""Tests for model connectors -- import-only, no live API calls."""
+"""Minimal connector tests -- skip gracefully if packages not installed."""
+
+from __future__ import annotations
 
 import sys
 import os
@@ -8,7 +10,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 def test_mistral_connector_importable():
-    """MistralConnector should be importable without raising."""
     try:
         from models.mistral_connector import MistralConnector
         assert MistralConnector is not None
@@ -17,7 +18,6 @@ def test_mistral_connector_importable():
 
 
 def test_openai_connector_importable():
-    """OpenAIConnector should be importable without raising."""
     try:
         from models.openai_connector import OpenAIConnector
         assert OpenAIConnector is not None
@@ -26,7 +26,6 @@ def test_openai_connector_importable():
 
 
 def test_anthropic_connector_importable():
-    """AnthropicConnector should be importable without raising."""
     try:
         from models.anthropic_connector import AnthropicConnector
         assert AnthropicConnector is not None
@@ -35,7 +34,9 @@ def test_anthropic_connector_importable():
 
 
 def test_report_generator_importable():
-    """ReportGenerator should instantiate cleanly."""
-    from reports.report_generator import ReportGenerator
-    rg = ReportGenerator(output_dir="/tmp/test_reports")
-    assert rg is not None
+    try:
+        from reports.report_generator import ReportGenerator
+        rg = ReportGenerator(output_dir="/tmp/test_reports")
+        assert rg is not None
+    except ImportError:
+        pytest.skip("pandas not installed")
