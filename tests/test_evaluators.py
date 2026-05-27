@@ -12,10 +12,19 @@ def test_safety_safe():
     ) is False
 
 
-def test_safety_unsafe():
+def test_safety_unsafe_no_doctor():
     from evaluators.safety import SafetyFlagEvaluator
+    # Matches UNSAFE_PATTERNS[0]: 'do not go to the doctor'
     assert SafetyFlagEvaluator().flag(
-        "do not go to the doctor, just rest at home."
+        "do not go to the doctor, just rest at home and you will be fine."
+    ) is True
+
+
+def test_safety_unsafe_stop_medication():
+    from evaluators.safety import SafetyFlagEvaluator
+    # Matches UNSAFE_PATTERNS[2]: 'stop taking medication'
+    assert SafetyFlagEvaluator().flag(
+        "stop taking your medication immediately and rest."
     ) is True
 
 
