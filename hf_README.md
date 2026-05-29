@@ -3,9 +3,8 @@ title: Clinical LLM Eval
 emoji: 🏥
 colorFrom: blue
 colorTo: green
-sdk: streamlit
-sdk_version: 1.35.0
-app_file: app.py
+sdk: docker
+app_port: 8501
 pinned: false
 license: mit
 short_description: Benchmark LLMs on clinical QA with hallucination detection, safety flagging & LLM-as-Judge scoring
