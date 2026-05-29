@@ -6,6 +6,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Streamlit](https://img.shields.io/badge/Streamlit-Demo-red.svg)](https://streamlit.io)
 [![HuggingFace](https://img.shields.io/badge/🤗-Datasets-yellow.svg)](https://huggingface.co/datasets)
+[![HuggingFace Spaces](https://img.shields.io/badge/🤗-Spaces-blue.svg)](https://huggingface.co/spaces/Sugumaran-Balasubramaniyan/clinical-llm-eval)
 
 ---
 
@@ -168,7 +169,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 **Sugumaran Balasubramaniyan**  
 AI/ML Engineer | MLOps | LLM Systems  
-[LinkedIn](https://www.linkedin.com/in/sugumaranbalasubramaniyan/) · [Portfolio](https://sugumaran-balasubramaniyan.netlify.app/)
+[LinkedIn](https://www.linkedin.com/in/sugumaranbalasubramaniyan/) · [Portfolio](https://www.sugumaran-balasubramaniyan.com/)
 
 ---
 
