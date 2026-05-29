@@ -7,7 +7,7 @@ sdk: docker
 app_port: 8501
 pinned: false
 license: mit
-short_description: Benchmark LLMs on clinical QA with hallucination detection, safety flagging & LLM-as-Judge scoring
+short_description: Clinical LLM benchmarking with safety & hallucination eval
 ---
 
 # 🏥 Clinical LLM Evaluation Framework
