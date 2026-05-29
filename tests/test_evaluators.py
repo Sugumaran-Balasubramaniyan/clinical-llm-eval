@@ -69,6 +69,14 @@ def test_rouge_keys_present():
     assert "rouge_1" in scores
     assert "rouge_2" in scores
     assert "rouge_l" in scores
+    assert "bert_score" in scores
+
+
+def test_bert_score_returns_float():
+    from evaluators.rouge_eval import RougeEvaluator
+    scores = RougeEvaluator().score("hello world", "hello world")
+    assert isinstance(scores["bert_score"], float)
+    assert 0.0 <= scores["bert_score"] <= 1.0
 
 
 def test_llm_judge_heuristic_range():

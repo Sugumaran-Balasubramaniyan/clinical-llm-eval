@@ -10,6 +10,7 @@ anthropic>=0.28.0
 
 # NLP Evaluation
 rouge-score>=0.1.2
+bert-score>=0.3.13
 
 # UI
 streamlit>=1.35.0

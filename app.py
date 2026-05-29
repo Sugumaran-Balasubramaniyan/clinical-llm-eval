@@ -114,6 +114,18 @@ def main():
     st.markdown("---")
 
     # ------------------------------------------------------------------
+    # Batch dataset evaluation (evaluator-only, no API keys needed)
+    # ------------------------------------------------------------------
+    st.subheader("📊 Batch Dataset Evaluation")
+    st.markdown("Run all evaluators across multiple clinical QA samples. No API keys required.")
+
+    if st.button("🔬 Run Batch Evaluation"):
+        with st.spinner(f"Evaluating {n_samples} samples from '{dataset_name}'..."):
+            _run_batch_eval(dataset_name, n_samples)
+
+    st.markdown("---")
+
+    # ------------------------------------------------------------------
     # Live model evaluation (requires API keys)
     # ------------------------------------------------------------------
     if MODEL_MAP:
@@ -209,6 +221,54 @@ def _display_results(results: list[dict]) -> None:
             c2.metric("LLM Judge", f"{r['LLM Judge']:.1f}/5")
             c3.metric("Hallucination", r["Hallucination"])
             c4.metric("Safety", r["Safety"])
+
+
+def _run_batch_eval(dataset_name: str, n_samples: int) -> None:
+    """Run evaluators across a batch of samples and display results."""
+    from data.loader import load_dataset
+
+    samples = load_dataset(dataset_name, n_samples=n_samples)
+    rouge = RougeEvaluator()
+    judge = LLMJudgeEvaluator()
+    halluc = HallucinationDetector()
+    safety = SafetyFlagEvaluator()
+
+    rows = []
+    for i, s in enumerate(samples):
+        q, ref = s["question"], s["answer"]
+
+        # For demo: generate a slightly varied response to make metrics meaningful
+        demo_response = f"Based on clinical assessment, {ref.lower()}. This is consistent with the presented findings."
+        scores = rouge.score(demo_response, ref)
+
+        rows.append({
+            "Sample": i + 1,
+            "Question": q[:80] + "..." if len(q) > 80 else q,
+            "ROUGE-L": f"{scores['rouge_l']:.3f}",
+            "ROUGE-1": f"{scores['rouge_1']:.3f}",
+            "ROUGE-2": f"{scores['rouge_2']:.3f}",
+            "Judge": f"{judge.score(q, demo_response, ref):.1f}",
+            "Hallucination": "⚠️" if halluc.detect(demo_response, ref) else "✅",
+            "Safety": "🚨" if safety.flag(demo_response) else "✅",
+        })
+
+    df = pd.DataFrame(rows)
+
+    # Summary metrics
+    rouge_l_vals = [float(r["ROUGE-L"]) for r in rows]
+    judge_vals = [float(r["Judge"]) for r in rows]
+    halluc_count = sum(1 for r in rows if r["Hallucination"] == "⚠️")
+    safety_count = sum(1 for r in rows if r["Safety"] == "🚨")
+
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("📊 Avg ROUGE-L", f"{sum(rouge_l_vals)/len(rouge_l_vals):.3f}")
+    col2.metric("🧠 Avg Judge", f"{sum(judge_vals)/len(judge_vals):.1f} / 5")
+    col3.metric("🔍 Hallucinations", f"{halluc_count}/{len(rows)} ({halluc_count/len(rows)*100:.0f}%)")
+    col4.metric("🛡️ Safety Flags", f"{safety_count}/{len(rows)} ({safety_count/len(rows)*100:.0f}%)")
+
+    st.dataframe(df, use_container_width=True, hide_index=True)
+
+    st.caption(f"Dataset: *{dataset_name}* · {len(samples)} samples · Evaluator-only mode (no API calls)")
 
 
 if __name__ == "__main__":

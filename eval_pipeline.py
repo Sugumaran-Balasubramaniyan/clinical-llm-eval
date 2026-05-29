@@ -133,7 +133,7 @@ def _print_summary(df: pd.DataFrame) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Clinical LLM Evaluation Pipeline")
-    parser.add_argument("--dataset", default="medqa", choices=["medqa", "pubmedqa", "medmcqa"])
+    parser.add_argument("--dataset", default="sample", choices=["sample", "medqa", "pubmedqa", "medmcqa"])
     parser.add_argument("--models", nargs="+", default=["mistral"], choices=list(MODEL_MAP.keys()))
     parser.add_argument("--n_samples", type=int, default=50)
     parser.add_argument("--output_dir", default="reports/output")
