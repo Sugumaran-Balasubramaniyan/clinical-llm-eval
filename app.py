@@ -1,18 +1,15 @@
 """Streamlit demo app for Clinical LLM Evaluation Framework."""
+from __future__ import annotations
 
+import os
 import streamlit as st
 import pandas as pd
-from io import StringIO
-import json
 
 from data.loader import load_dataset
 from evaluators.rouge_eval import RougeEvaluator
 from evaluators.llm_judge import LLMJudgeEvaluator
 from evaluators.hallucination import HallucinationDetector
 from evaluators.safety import SafetyFlagEvaluator
-from models.mistral_connector import MistralConnector
-from models.openai_connector import OpenAIConnector
-from models.anthropic_connector import AnthropicConnector
 
 st.set_page_config(
     page_title="Clinical LLM Eval",
@@ -20,30 +17,53 @@ st.set_page_config(
     layout="wide",
 )
 
-MODEL_MAP = {
-    "Mistral (mistral-small)": MistralConnector,
-    "GPT-4o Mini": OpenAIConnector,
-    "Claude Haiku": AnthropicConnector,
-}
+# ---------------------------------------------------------------------------
+# Model connectors -- imported lazily so missing API packages don't crash
+# the app on HuggingFace Spaces where only some packages may be installed
+# ---------------------------------------------------------------------------
+def _get_model_map() -> dict:
+    model_map = {}
+    try:
+        from models.mistral_connector import MistralConnector
+        model_map["Mistral (mistral-small)"] = MistralConnector
+    except ImportError:
+        pass
+    try:
+        from models.openai_connector import OpenAIConnector
+        model_map["GPT-4o Mini"] = OpenAIConnector
+    except ImportError:
+        pass
+    try:
+        from models.anthropic_connector import AnthropicConnector
+        model_map["Claude Haiku"] = AnthropicConnector
+    except ImportError:
+        pass
+    return model_map
 
 
 def main():
     st.title("🏥 Clinical LLM Evaluation Framework")
     st.markdown(
         "Compare LLM performance on clinical reasoning tasks with "
-        "hallucination detection, LLM-as-judge scoring, and safety flagging."
+        "hallucination detection, LLM-as-judge scoring, and safety flagging.\n\n"
+        "> ⚠️ **Demo mode**: In Single Question Mode the evaluators run locally "
+        "(no API key needed). Live model generation requires API keys set in Secrets."
     )
+
+    MODEL_MAP = _get_model_map()
 
     st.sidebar.header("⚙️ Configuration")
 
-    # Model selection
-    selected_models = st.sidebar.multiselect(
-        "Select models to evaluate",
-        options=list(MODEL_MAP.keys()),
-        default=["Mistral (mistral-small)"],
-    )
+    if MODEL_MAP:
+        selected_models = st.sidebar.multiselect(
+            "Select models to evaluate",
+            options=list(MODEL_MAP.keys()),
+            default=[list(MODEL_MAP.keys())[0]],
+        )
+    else:
+        st.sidebar.warning("No model packages installed. Running in evaluator-only mode.")
+        selected_models = []
 
-    # Dataset selection
     dataset_name = st.sidebar.selectbox(
         "Dataset",
         options=["sample", "medqa", "pubmedqa", "medmcqa"],
@@ -51,120 +71,144 @@ def main():
         help="'sample' uses built-in demo questions. Others require HuggingFace access.",
     )
 
-    n_samples = st.sidebar.slider("Number of samples", min_value=1, max_value=100, value=5)
+    n_samples = st.sidebar.slider("Number of samples", min_value=1, max_value=20, value=3)
 
     st.sidebar.markdown("---")
     st.sidebar.markdown(
-        "**API Keys** — Set in `.env` file or as environment variables:\n"
-        "`MISTRAL_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`"
+        "🔑 **API Keys** — Add via Spaces Secrets panel:\n"
+        "`MISTRAL_API_KEY` / `OPENAI_API_KEY` / `ANTHROPIC_API_KEY`"
+    )
+    st.sidebar.markdown(
+        "🔗 [GitHub](https://github.com/Sugumaran-Balasubramaniyan/clinical-llm-eval) · "
+        "[👤 Portfolio](https://www.sugumaran-balasubramaniyan.com/)"
     )
 
-    # Manual question input
-    st.subheader("🔬 Single Question Mode")
+    # ------------------------------------------------------------------
+    # Single question evaluator mode (no API key needed)
+    # ------------------------------------------------------------------
+    st.subheader("🔬 Evaluator Demo — No API Key Required")
+    st.markdown("Paste any model response + reference answer to score it instantly.")
+
     col1, col2 = st.columns(2)
     with col1:
         custom_question = st.text_area(
             "Clinical Question",
-            placeholder="Enter a clinical question...",
-            height=120,
+            value="A 45-year-old presents with ST elevation in leads II, III, aVF. What is the diagnosis?",
+            height=100,
+        )
+        custom_response = st.text_area(
+            "Model Response (paste here)",
+            value="This presentation is consistent with an inferior STEMI. Immediate reperfusion therapy is recommended.",
+            height=100,
         )
     with col2:
         custom_reference = st.text_area(
             "Reference Answer (Ground Truth)",
-            placeholder="Enter the correct answer...",
-            height=120,
+            value="Inferior ST-elevation myocardial infarction (STEMI). Treat with primary PCI or thrombolysis.",
+            height=100,
         )
 
-    if st.button("🚀 Evaluate Single Question", disabled=not (custom_question and custom_reference and selected_models)):
-        with st.spinner("Running evaluation..."):
-            results = _evaluate_single(
-                custom_question, custom_reference, selected_models
-            )
-            _display_single_results(results)
+    if st.button("🚀 Score This Response"):
+        _score_response(custom_question, custom_response, custom_reference)
 
     st.markdown("---")
 
-    # Batch evaluation
-    st.subheader("📊 Batch Dataset Evaluation")
-    if st.button("▶️ Run Batch Evaluation", disabled=not selected_models):
-        with st.spinner(f"Evaluating {n_samples} samples across {len(selected_models)} model(s)..."):
-            df = _run_batch(dataset_name, selected_models, n_samples)
-            _display_batch_results(df)
+    # ------------------------------------------------------------------
+    # Live model evaluation (requires API keys)
+    # ------------------------------------------------------------------
+    if MODEL_MAP:
+        st.subheader("🤖 Live Model Evaluation")
+        col1, col2 = st.columns(2)
+        with col1:
+            live_question = st.text_area(
+                "Clinical Question",
+                placeholder="Enter a clinical question...",
+                height=120,
+                key="live_q",
+            )
+        with col2:
+            live_reference = st.text_area(
+                "Reference Answer",
+                placeholder="Enter the correct answer...",
+                height=120,
+                key="live_ref",
+            )
+
+        if st.button(
+            "🚀 Evaluate with Selected Models",
+            disabled=not (live_question and live_reference and selected_models),
+        ):
+            with st.spinner("Calling models and running evaluation..."):
+                results = _evaluate_live(live_question, live_reference, selected_models, MODEL_MAP)
+                _display_results(results)
+    else:
+        st.info("💡 Install `mistralai`, `openai`, or `anthropic` and add API keys to enable live model evaluation.")
 
 
-def _evaluate_single(question: str, reference: str, model_names: list[str]) -> list[dict]:
-    """Evaluate a single question across selected models."""
-    rouge_eval = RougeEvaluator()
-    llm_judge = LLMJudgeEvaluator()
-    hallucination = HallucinationDetector()
+def _score_response(question: str, response: str, reference: str) -> None:
+    """Score a pre-written response with all evaluators."""
+    rouge = RougeEvaluator()
+    judge = LLMJudgeEvaluator()
+    halluc = HallucinationDetector()
+    safety = SafetyFlagEvaluator()
+
+    scores = rouge.score(response, reference)
+    judge_score = judge.score(question, response, reference)
+    is_hallucination = halluc.detect(response, reference)
+    is_unsafe = safety.flag(response)
+
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("📊 ROUGE-L", f"{scores['rouge_l']:.3f}")
+    col2.metric("🧠 LLM Judge", f"{judge_score:.1f} / 5")
+    col3.metric("🔍 Hallucination", "⚠️ Detected" if is_hallucination else "✅ Clean")
+    col4.metric("🛡️ Safety", "🚨 Flagged" if is_unsafe else "✅ Safe")
+
+    with st.expander("Score details"):
+        st.json({
+            "rouge_1": scores["rouge_1"],
+            "rouge_2": scores["rouge_2"],
+            "rouge_l": scores["rouge_l"],
+            "llm_judge_score": judge_score,
+            "hallucination": is_hallucination,
+            "safety_flag": is_unsafe,
+        })
+
+
+def _evaluate_live(question: str, reference: str, model_names: list, model_map: dict) -> list[dict]:
+    """Call live models and evaluate responses."""
+    rouge = RougeEvaluator()
+    judge = LLMJudgeEvaluator()
+    halluc = HallucinationDetector()
     safety = SafetyFlagEvaluator()
 
     results = []
-    for model_name in model_names:
-        connector = MODEL_MAP[model_name]()
+    for name in model_names:
+        connector = model_map[name]()
         try:
             response = connector.generate(question)
         except Exception as e:
             response = f"[Error: {e}]"
-
-        scores = rouge_eval.score(response, reference)
+        scores = rouge.score(response, reference)
         results.append({
-            "Model": model_name,
+            "Model": name,
             "Response": response,
             "ROUGE-L": scores["rouge_l"],
-            "LLM Judge": llm_judge.score(question, response, reference),
-            "Hallucination": "⚠️ Detected" if hallucination.detect(response, reference) else "✅ Clean",
+            "LLM Judge": judge.score(question, response, reference),
+            "Hallucination": "⚠️ Detected" if halluc.detect(response, reference) else "✅ Clean",
             "Safety": "🚨 Flagged" if safety.flag(response) else "✅ Safe",
         })
     return results
 
 
-def _display_single_results(results: list[dict]) -> None:
-    """Display single question evaluation results."""
+def _display_results(results: list[dict]) -> None:
     for r in results:
         with st.expander(f"🤖 {r['Model']}", expanded=True):
             st.markdown(f"**Response:** {r['Response']}")
-            col1, col2, col3, col4 = st.columns(4)
-            col1.metric("ROUGE-L", f"{r['ROUGE-L']:.3f}")
-            col2.metric("LLM Judge", f"{r['LLM Judge']:.1f}/5")
-            col3.metric("Hallucination", r["Hallucination"])
-            col4.metric("Safety", r["Safety"])
-
-
-def _run_batch(dataset_name: str, model_names: list[str], n_samples: int) -> pd.DataFrame:
-    """Run batch evaluation."""
-    from eval_pipeline import run_evaluation
-    model_keys = {
-        "Mistral (mistral-small)": "mistral",
-        "GPT-4o Mini": "gpt4",
-        "Claude Haiku": "claude",
-    }
-    keys = [model_keys[m] for m in model_names if m in model_keys]
-    return run_evaluation(dataset_name=dataset_name, model_names=keys, n_samples=n_samples)
-
-
-def _display_batch_results(df: pd.DataFrame) -> None:
-    """Display batch evaluation results with charts."""
-    st.subheader("📈 Results Summary")
-
-    summary = df.groupby("model").agg(
-        ROUGE_L=("rouge_l", "mean"),
-        LLM_Judge=("llm_judge_score", "mean"),
-        Hallucination_Rate=("hallucination", "mean"),
-        Safety_Flag_Rate=("safety_flag", "mean"),
-    ).round(3)
-
-    st.dataframe(summary, use_container_width=True)
-    st.bar_chart(summary[["ROUGE_L", "LLM_Judge"]])
-
-    # Download
-    csv = df.to_csv(index=False)
-    st.download_button(
-        "⬇️ Download Full Results CSV",
-        data=csv,
-        file_name="clinical_eval_results.csv",
-        mime="text/csv",
-    )
+            c1, c2, c3, c4 = st.columns(4)
+            c1.metric("ROUGE-L", f"{r['ROUGE-L']:.3f}")
+            c2.metric("LLM Judge", f"{r['LLM Judge']:.1f}/5")
+            c3.metric("Hallucination", r["Hallucination"])
+            c4.metric("Safety", r["Safety"])
 
 
 if __name__ == "__main__":
