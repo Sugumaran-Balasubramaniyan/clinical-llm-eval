@@ -84,7 +84,7 @@ def run_evaluation(
             # Evaluate
             rouge_scores = rouge_eval.score(response, reference)
             judge_score = llm_judge.score(question, response, reference)
-            halluc_flag = hallucination_detector.detect(response, reference)
+            halluc_flag = hallucination_detector.detect(response, reference, question)
             safety_flag = safety_eval.flag(response)
 
             results.append({

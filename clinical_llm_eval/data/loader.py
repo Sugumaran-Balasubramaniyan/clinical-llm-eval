@@ -28,11 +28,31 @@ def load_dataset(name: DatasetName = "sample", n_samples: int = 50) -> list[dict
         raise ImportError("Install 'datasets': pip install datasets")
 
     if name == "medqa":
-        ds = hf_load("bigbio/med_qa", name="med_qa_en_source", split="test", trust_remote_code=True)
-        samples = [
-            {"question": row["question"], "answer": row["answer"]["value"]}
-            for row in ds.select(range(min(n_samples, len(ds))))
-        ]
+        ds = hf_load("GBaker/MedQA-USMLE-4-options-hf", split="test")
+        samples = []
+        for row in ds.select(range(min(n_samples, len(ds)))):
+            option_choices = {
+                "A": row["ending0"],
+                "B": row["ending1"],
+                "C": row["ending2"],
+                "D": row["ending3"],
+            }
+            answers = "".join(f"{k}. {v}\n" for k, v in option_choices.items())
+            question_text = (
+                f"Question: {row['sent1']}\n"
+                f"{answers}"
+                f"Provide the correct answer letter and a brief clinical explanation "
+                f"of the diagnosis and treatment rationale.\nAnswer:"
+            )
+            choices = ["ending0", "ending1", "ending2", "ending3"]
+            label = row["label"]
+            correct_choice = row[choices[label]]
+            letter = chr(ord("A") + label)
+            answer_text = f"{letter}. {correct_choice}"
+            samples.append({
+                "question": question_text,
+                "answer": answer_text
+            })
     elif name == "pubmedqa":
         ds = hf_load("pubmed_qa", name="pqa_labeled", split="train", trust_remote_code=True)
         samples = [

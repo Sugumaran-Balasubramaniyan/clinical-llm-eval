@@ -15,9 +15,12 @@ class HallucinationDetector:
         r'\b(?:type [0-9]|stage [IV]+|grade [0-9])\b',
     ]
 
-    def detect(self, response: str, reference: str) -> bool:
+    def detect(self, response: str, reference: str, question: str | None = None) -> bool:
         """Detect potential hallucination in a clinical response."""
-        ref_tokens = self._extract_key_terms(reference)
+        ref_text = reference
+        if question:
+            ref_text += " " + question
+        ref_tokens = self._extract_key_terms(ref_text)
         resp_tokens = self._extract_key_terms(response)
 
         if not ref_tokens:
