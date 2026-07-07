@@ -20,7 +20,10 @@ class MistralConnector:
 
     def _init_client(self):
         try:
-            from mistralai import Mistral
+            try:
+                from mistralai import Mistral
+            except ImportError:
+                from mistralai.client import Mistral
             return Mistral(api_key=os.getenv("MISTRAL_API_KEY"))
         except ImportError:
             raise ImportError("Install mistralai: pip install mistralai")

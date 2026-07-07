@@ -27,27 +27,36 @@ This framework provides a modular, extensible pipeline to:
 
 ## 🏗️ Architecture
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                  Clinical LLM Eval Pipeline              │
-├─────────────────────────────────────────────────────────┤
-│                                                          │
-│  [Dataset]──►[Model Connector]──►[LLM Response]         │
-│      │              │                    │               │
-│  MedQA/         Mistral API          Raw Output          │
-│  PubMedQA       OpenAI API               │               │
-│  MedMCQA        Anthropic API            ▼               │
-│                                   [Evaluators]           │
-│                                   ├─ ROUGE Score         │
-│                                   ├─ BERTScore           │
-│                                   ├─ LLM-as-Judge        │
-│                                   ├─ Hallucination Detector│
-│                                   └─ Safety Flag         │
-│                                         │                │
-│                                         ▼                │
-│                                  [Report Generator]      │
-│                                  CSV / PDF / Dashboard   │
-└─────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    subgraph Data & Models
+        A[Clinical Datasets<br/>MedQA / PubMedQA / MedMCQA] --> B[Model Connectors]
+        B -->|Mistral API| C[Raw Response]
+        B -->|OpenAI API| C
+        B -->|Anthropic API| C
+    end
+
+    subgraph Evaluation Suite
+        C --> D[Evaluators]
+        D --> D1[ROUGE Score]
+        D --> D2[BERTScore Similarity]
+        D --> D3[LLM-as-Judge Scorer]
+        D --> D4[Hallucination Detector]
+        D --> D5[Safety Flag Classifier]
+    end
+
+    subgraph Output & Presentation
+        D1 & D2 & D3 & D4 & D5 --> E[Report Generator]
+        E --> F1[CSV / JSON Summary]
+        E --> F2[Streamlit Dashboard]
+    end
+
+    style A fill:#1e1e2e,stroke:#313244,stroke-width:2px,color:#cdd6f4
+    style B fill:#1e1e2e,stroke:#313244,stroke-width:2px,color:#cdd6f4
+    style C fill:#1e1e2e,stroke:#313244,stroke-width:2px,color:#cdd6f4
+    style D fill:#1e1e2e,stroke:#313244,stroke-width:2px,color:#cdd6f4
+    style E fill:#0285FF,stroke:#005BBB,stroke-width:2px,color:#fff
+    style F2 fill:#ff4b4b,stroke:#d33636,stroke-width:2px,color:#fff
 ```
 
 ---
@@ -58,7 +67,7 @@ This framework provides a modular, extensible pipeline to:
 ```bash
 git clone https://github.com/Sugumaran-Balasubramaniyan/clinical-llm-eval.git
 cd clinical-llm-eval
-pip install -r requirements.txt
+pip install -e .
 ```
 
 ### 2. Set API keys
@@ -68,8 +77,13 @@ cp .env.example .env
 ```
 
 ### 3. Run evaluation pipeline
+You can run the evaluation using the CLI command installed with the package:
 ```bash
-python eval_pipeline.py --dataset medqa --models mistral gpt4 --n_samples 50
+clinical-llm-eval --dataset medqa --models mistral gpt4 --n_samples 50
+```
+Or run the module directly:
+```bash
+python -m clinical_llm_eval.eval_pipeline --dataset medqa --models mistral gpt4 --n_samples 50
 ```
 
 ### 4. Launch Streamlit demo
@@ -95,22 +109,25 @@ streamlit run app.py
 
 ```
 clinical-llm-eval/
-├── data/
-│   ├── sample_medqa.json       # Sample clinical QA pairs
-│   └── loader.py               # HuggingFace dataset loader
-├── evaluators/
-│   ├── __init__.py
-│   ├── rouge_eval.py           # ROUGE + BERTScore
-│   ├── llm_judge.py            # LLM-as-judge scorer
-│   ├── hallucination.py        # Hallucination detector
-│   └── safety.py               # Safety flag classifier
-├── models/
-│   ├── __init__.py
-│   ├── mistral_connector.py    # Mistral API
-│   ├── openai_connector.py     # OpenAI API
-│   └── anthropic_connector.py  # Anthropic API
-├── reports/
-│   └── report_generator.py     # CSV + HTML report output
+├── clinical_llm_eval/          # Core package
+│   ├── data/
+│   │   ├── sample_medqa.json   # Sample clinical QA pairs
+│   │   └── loader.py           # HuggingFace dataset loader
+│   ├── evaluators/
+│   │   ├── __init__.py
+│   │   ├── rouge_eval.py       # ROUGE + BERTScore
+│   │   ├── llm_judge.py        # LLM-as-judge scorer
+│   │   ├── hallucination.py    # Hallucination detector
+│   │   └── safety.py           # Safety flag classifier
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── mistral_connector.py # Mistral API
+│   │   ├── openai_connector.py # OpenAI API
+│   │   └── anthropic_connector.py # Anthropic API
+│   ├── reports/
+│   │   └── report_generator.py # CSV + HTML report output
+│   ├── __init__.py             # Package-level exports
+│   └── eval_pipeline.py        # Main pipeline entry point
 ├── tests/
 │   ├── test_evaluators.py
 │   └── test_models.py
@@ -118,7 +135,7 @@ clinical-llm-eval/
 │   └── workflows/
 │       └── ci.yml              # CI/CD pipeline
 ├── app.py                      # Streamlit demo
-├── eval_pipeline.py            # Main pipeline entry point
+├── pyproject.toml              # Package configuration
 ├── requirements.txt
 ├── .env.example
 ├── CONTRIBUTING.md

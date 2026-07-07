@@ -18,6 +18,8 @@ class ReportGenerator:
 
     def generate(self, df: pd.DataFrame) -> dict[str, str]:
         """Generate evaluation reports from results DataFrame."""
+        if df.empty:
+            return {}
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         paths: dict[str, str] = {}
 

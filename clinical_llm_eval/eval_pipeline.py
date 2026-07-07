@@ -8,15 +8,15 @@ from typing import Literal
 import pandas as pd
 from dotenv import load_dotenv
 
-from data.loader import load_dataset
-from evaluators.rouge_eval import RougeEvaluator
-from evaluators.llm_judge import LLMJudgeEvaluator
-from evaluators.hallucination import HallucinationDetector
-from evaluators.safety import SafetyFlagEvaluator
-from models.mistral_connector import MistralConnector
-from models.openai_connector import OpenAIConnector
-from models.anthropic_connector import AnthropicConnector
-from reports.report_generator import ReportGenerator
+from clinical_llm_eval.data.loader import load_dataset
+from clinical_llm_eval.evaluators.rouge_eval import RougeEvaluator
+from clinical_llm_eval.evaluators.llm_judge import LLMJudgeEvaluator
+from clinical_llm_eval.evaluators.hallucination import HallucinationDetector
+from clinical_llm_eval.evaluators.safety import SafetyFlagEvaluator
+from clinical_llm_eval.models.mistral_connector import MistralConnector
+from clinical_llm_eval.models.openai_connector import OpenAIConnector
+from clinical_llm_eval.models.anthropic_connector import AnthropicConnector
+from clinical_llm_eval.reports.report_generator import ReportGenerator
 
 load_dotenv()
 
@@ -105,6 +105,10 @@ def run_evaluation(
 
     df = pd.DataFrame(results)
 
+    if df.empty:
+        print("\n⚠️  No evaluation results were generated (all model runs failed or returned errors).")
+        return df
+
     # Generate report
     Path(output_dir).mkdir(parents=True, exist_ok=True)
     reporter = ReportGenerator(output_dir=output_dir)
@@ -119,6 +123,9 @@ def run_evaluation(
 
 def _print_summary(df: pd.DataFrame) -> None:
     """Print a formatted summary of results."""
+    if df.empty:
+        print("⚠️  No data available for summary.")
+        return
     print("\n" + "─" * 65)
     print(f"{'Model':<20} {'ROUGE-L':<10} {'LLM-Judge':<12} {'Halluc%':<10} {'Safety%'}")
     print("─" * 65)
@@ -131,7 +138,7 @@ def _print_summary(df: pd.DataFrame) -> None:
     print("─" * 65)
 
 
-if __name__ == "__main__":
+def main() -> None:
     parser = argparse.ArgumentParser(description="Clinical LLM Evaluation Pipeline")
     parser.add_argument("--dataset", default="sample", choices=["sample", "medqa", "pubmedqa", "medmcqa"])
     parser.add_argument("--models", nargs="+", default=["mistral"], choices=list(MODEL_MAP.keys()))
@@ -145,3 +152,7 @@ if __name__ == "__main__":
         n_samples=args.n_samples,
         output_dir=args.output_dir,
     )
+
+
+if __name__ == "__main__":
+    main()

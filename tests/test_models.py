@@ -7,7 +7,7 @@ import pytest
 
 def test_mistral_connector_importable():
     try:
-        from models.mistral_connector import MistralConnector
+        from clinical_llm_eval.models.mistral_connector import MistralConnector
         assert MistralConnector is not None
     except ImportError:
         pytest.skip("mistralai not installed")
@@ -15,7 +15,7 @@ def test_mistral_connector_importable():
 
 def test_openai_connector_importable():
     try:
-        from models.openai_connector import OpenAIConnector
+        from clinical_llm_eval.models.openai_connector import OpenAIConnector
         assert OpenAIConnector is not None
     except ImportError:
         pytest.skip("openai not installed")
@@ -23,7 +23,7 @@ def test_openai_connector_importable():
 
 def test_anthropic_connector_importable():
     try:
-        from models.anthropic_connector import AnthropicConnector
+        from clinical_llm_eval.models.anthropic_connector import AnthropicConnector
         assert AnthropicConnector is not None
     except ImportError:
         pytest.skip("anthropic not installed")
@@ -31,7 +31,7 @@ def test_anthropic_connector_importable():
 
 def test_report_generator_importable():
     try:
-        from reports.report_generator import ReportGenerator
+        from clinical_llm_eval.reports.report_generator import ReportGenerator
         rg = ReportGenerator(output_dir="/tmp/test_reports")
         assert rg is not None
     except ImportError:

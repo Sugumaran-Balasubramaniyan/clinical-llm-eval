@@ -5,11 +5,11 @@ import os
 import streamlit as st
 import pandas as pd
 
-from data.loader import load_dataset
-from evaluators.rouge_eval import RougeEvaluator
-from evaluators.llm_judge import LLMJudgeEvaluator
-from evaluators.hallucination import HallucinationDetector
-from evaluators.safety import SafetyFlagEvaluator
+from clinical_llm_eval.data.loader import load_dataset
+from clinical_llm_eval.evaluators.rouge_eval import RougeEvaluator
+from clinical_llm_eval.evaluators.llm_judge import LLMJudgeEvaluator
+from clinical_llm_eval.evaluators.hallucination import HallucinationDetector
+from clinical_llm_eval.evaluators.safety import SafetyFlagEvaluator
 
 st.set_page_config(
     page_title="Clinical LLM Eval",
@@ -24,17 +24,17 @@ st.set_page_config(
 def _get_model_map() -> dict:
     model_map = {}
     try:
-        from models.mistral_connector import MistralConnector
+        from clinical_llm_eval.models.mistral_connector import MistralConnector
         model_map["Mistral (mistral-small)"] = MistralConnector
     except ImportError:
         pass
     try:
-        from models.openai_connector import OpenAIConnector
+        from clinical_llm_eval.models.openai_connector import OpenAIConnector
         model_map["GPT-4o Mini"] = OpenAIConnector
     except ImportError:
         pass
     try:
-        from models.anthropic_connector import AnthropicConnector
+        from clinical_llm_eval.models.anthropic_connector import AnthropicConnector
         model_map["Claude Haiku"] = AnthropicConnector
     except ImportError:
         pass
@@ -225,7 +225,7 @@ def _display_results(results: list[dict]) -> None:
 
 def _run_batch_eval(dataset_name: str, n_samples: int) -> None:
     """Run evaluators across a batch of samples and display results."""
-    from data.loader import load_dataset
+    from clinical_llm_eval.data.loader import load_dataset
 
     samples = load_dataset(dataset_name, n_samples=n_samples)
     rouge = RougeEvaluator()
