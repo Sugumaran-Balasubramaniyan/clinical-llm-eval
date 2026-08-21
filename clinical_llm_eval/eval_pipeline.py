@@ -1,7 +1,6 @@
 """Main evaluation pipeline entry point."""
 
 import argparse
-import json
 from pathlib import Path
 from typing import Literal
 
@@ -16,6 +15,7 @@ from clinical_llm_eval.evaluators.safety import SafetyFlagEvaluator
 from clinical_llm_eval.models.mistral_connector import MistralConnector
 from clinical_llm_eval.models.openai_connector import OpenAIConnector
 from clinical_llm_eval.models.anthropic_connector import AnthropicConnector
+from clinical_llm_eval.models.ollama_connector import OllamaConnector
 from clinical_llm_eval.reports.report_generator import ReportGenerator
 
 load_dotenv()
@@ -24,9 +24,21 @@ MODEL_MAP = {
     "mistral": MistralConnector,
     "gpt4": OpenAIConnector,
     "claude": AnthropicConnector,
+    "ollama": OllamaConnector,
 }
 
-DatasetName = Literal["medqa", "pubmedqa", "medmcqa"]
+DatasetName = Literal["medqa", "pubmedqa", "medmcqa", "sample"]
+
+
+def get_model_connector(model_name: str):
+    """Instantiate appropriate connector, supporting submodels like ollama/biomistral."""
+    if model_name.startswith("ollama/") or model_name.startswith("local/"):
+        _, submodel = model_name.split("/", 1)
+        return OllamaConnector(model=submodel)
+    connector_cls = MODEL_MAP.get(model_name)
+    if connector_cls:
+        return connector_cls()
+    return None
 
 
 def run_evaluation(
@@ -46,7 +58,7 @@ def run_evaluation(
     Returns:
         DataFrame with evaluation results.
     """
-    print(f"\n🏥 Clinical LLM Eval Pipeline")
+    print("\n🏥 Clinical LLM Eval Pipeline")
     print(f"Dataset: {dataset_name} | Models: {model_names} | Samples: {n_samples}\n")
 
     # Load dataset
@@ -63,12 +75,10 @@ def run_evaluation(
 
     for model_name in model_names:
         print(f"\n🤖 Evaluating: {model_name}")
-        connector_cls = MODEL_MAP.get(model_name)
-        if not connector_cls:
-            print(f"⚠️  Unknown model: {model_name}, skipping.")
+        connector = get_model_connector(model_name)
+        if not connector:
+            print(f"⚠️  Unknown model or provider for: {model_name}, skipping.")
             continue
-
-        connector = connector_cls()
 
         for i, sample in enumerate(samples):
             question = sample["question"]
@@ -141,7 +151,7 @@ def _print_summary(df: pd.DataFrame) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Clinical LLM Evaluation Pipeline")
     parser.add_argument("--dataset", default="sample", choices=["sample", "medqa", "pubmedqa", "medmcqa"])
-    parser.add_argument("--models", nargs="+", default=["mistral"], choices=list(MODEL_MAP.keys()))
+    parser.add_argument("--models", nargs="+", default=["mistral"], help="Models to evaluate: e.g. mistral, gpt4, claude, ollama/biomistral, ollama/llama3.2")
     parser.add_argument("--n_samples", type=int, default=50)
     parser.add_argument("--output_dir", default="reports/output")
     args = parser.parse_args()

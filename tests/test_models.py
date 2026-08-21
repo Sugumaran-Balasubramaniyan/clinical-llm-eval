@@ -1,6 +1,7 @@
 """Connector tests - import-only, skip gracefully if packages missing."""
 from __future__ import annotations
-import sys, os
+import sys
+import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import pytest
 
@@ -27,6 +28,13 @@ def test_anthropic_connector_importable():
         assert AnthropicConnector is not None
     except ImportError:
         pytest.skip("anthropic not installed")
+
+
+def test_ollama_connector_importable():
+    from clinical_llm_eval.models.ollama_connector import OllamaConnector
+    connector = OllamaConnector(model="biomistral", host="http://localhost:11434")
+    assert connector.model == "biomistral"
+    assert connector.host == "http://localhost:11434"
 
 
 def test_report_generator_importable():

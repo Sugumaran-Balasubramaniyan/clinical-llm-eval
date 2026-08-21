@@ -1,7 +1,6 @@
 """Mistral AI API connector."""
 
 import os
-from typing import Optional
 
 
 SYSTEM_PROMPT = (

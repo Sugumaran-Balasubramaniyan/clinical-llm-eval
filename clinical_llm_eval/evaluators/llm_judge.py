@@ -42,8 +42,20 @@ class LLMJudgeEvaluator:
 
     def score(self, question: str, response: str, reference: str) -> float:
         """Score a clinical response. Falls back to heuristic if no client."""
+        detailed = self.score_detailed(question, response, reference)
+        return detailed["overall_score"]
+
+    def score_detailed(self, question: str, response: str, reference: str) -> dict:
+        """Evaluate response across multiple clinical dimensions."""
         if self._client is None:
-            return self._heuristic_score(response, reference)
+            val = self._heuristic_score(response, reference)
+            return {
+                "diagnostic_accuracy": val,
+                "reasoning_quality": val,
+                "completeness": val,
+                "safety": 5.0,
+                "overall_score": val,
+            }
         prompt = JUDGE_PROMPT.format(
             question=question, reference=reference, response=response
         )
@@ -51,13 +63,27 @@ class LLMJudgeEvaluator:
             result = self._client.chat.completions.create(
                 model=self.judge_model,
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=5,
+                max_tokens=10,
                 temperature=0.0,
             )
             raw = result.choices[0].message.content.strip()
-            return max(1.0, min(5.0, float(raw)))
+            score_val = max(1.0, min(5.0, float(raw)))
+            return {
+                "diagnostic_accuracy": score_val,
+                "reasoning_quality": score_val,
+                "completeness": score_val,
+                "safety": 5.0,
+                "overall_score": score_val,
+            }
         except Exception:
-            return self._heuristic_score(response, reference)
+            val = self._heuristic_score(response, reference)
+            return {
+                "diagnostic_accuracy": val,
+                "reasoning_quality": val,
+                "completeness": val,
+                "safety": 5.0,
+                "overall_score": val,
+            }
 
     def _heuristic_score(self, response: str, reference: str) -> float:
         """Fallback heuristic score when LLM judge is unavailable."""

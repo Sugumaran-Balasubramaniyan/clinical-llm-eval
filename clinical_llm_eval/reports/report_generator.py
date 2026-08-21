@@ -60,24 +60,32 @@ class ReportGenerator:
 
         # Color helper for metrics
         def color_rouge(v: float) -> str:
-            if v >= 0.5: return "#4ade80"
-            if v >= 0.3: return "#facc15"
+            if v >= 0.5:
+                return "#4ade80"
+            if v >= 0.3:
+                return "#facc15"
             return "#f87171"
 
         def color_judge(v: float) -> str:
-            if v >= 4.0: return "#4ade80"
-            if v >= 3.0: return "#facc15"
+            if v >= 4.0:
+                return "#4ade80"
+            if v >= 3.0:
+                return "#facc15"
             return "#f87171"
 
         def color_rate(v: float, invert: bool = True) -> str:
             """Color based on rate. invert=True means lower is better."""
             if invert:
-                if v <= 0.1: return "#4ade80"
-                if v <= 0.2: return "#facc15"
+                if v <= 0.1:
+                    return "#4ade80"
+                if v <= 0.2:
+                    return "#facc15"
                 return "#f87171"
             else:
-                if v >= 0.9: return "#4ade80"
-                if v >= 0.7: return "#facc15"
+                if v >= 0.9:
+                    return "#4ade80"
+                if v >= 0.7:
+                    return "#facc15"
                 return "#f87171"
 
         # Build summary table rows

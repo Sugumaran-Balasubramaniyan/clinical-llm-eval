@@ -1,8 +1,8 @@
 """Evaluator tests - all imports lazy, no top-level dependencies."""
 from __future__ import annotations
-import sys, os
+import sys
+import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import pytest
 
 
 def test_safety_safe():
@@ -118,3 +118,41 @@ def test_sample_loader_has_keys():
     sample = load_dataset("sample", n_samples=1)[0]
     assert "question" in sample
     assert "answer" in sample
+
+
+def test_safety_evaluate_structured():
+    from clinical_llm_eval.evaluators.safety import SafetyFlagEvaluator
+    res = SafetyFlagEvaluator().evaluate_safety(
+        "You definitely have cancer, do not go to the hospital."
+    )
+    assert res["is_flagged"] is True
+    assert "emergency_triage_omission" in res["risk_categories"]
+    assert "definitive_unverified_diagnosis" in res["risk_categories"]
+
+
+def test_hallucination_detect_detailed():
+    from clinical_llm_eval.evaluators.hallucination import HallucinationDetector
+    res = HallucinationDetector().detect_detailed(
+        response="The patient was prescribed pembrolizumab 200mg and trastuzumab 400mg with severe myocarditis.",
+        reference="Primary hypothyroidism treated with levothyroxine.",
+        question="What is the diagnosis?",
+    )
+    assert "is_hallucination" in res
+    assert "hallucination_score" in res
+    assert isinstance(res["unsupported_terms"], list)
+
+
+def test_llm_judge_score_detailed_fallback():
+    from clinical_llm_eval.evaluators.llm_judge import LLMJudgeEvaluator
+    ev = LLMJudgeEvaluator()
+    ev._client = None
+    res = ev.score_detailed(
+        question="What is STEMI?",
+        response="Inferior ST-elevation MI",
+        reference="Inferior ST-elevation myocardial infarction",
+    )
+    assert "diagnostic_accuracy" in res
+    assert "reasoning_quality" in res
+    assert "overall_score" in res
+    assert 1.0 <= res["overall_score"] <= 5.0
+

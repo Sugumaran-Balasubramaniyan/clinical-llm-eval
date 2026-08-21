@@ -3,5 +3,6 @@
 from .mistral_connector import MistralConnector
 from .openai_connector import OpenAIConnector
 from .anthropic_connector import AnthropicConnector
+from .ollama_connector import OllamaConnector
 
-__all__ = ["MistralConnector", "OpenAIConnector", "AnthropicConnector"]
+__all__ = ["MistralConnector", "OpenAIConnector", "AnthropicConnector", "OllamaConnector"]

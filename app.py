@@ -1,7 +1,6 @@
 """Streamlit demo app for Clinical LLM Evaluation Framework."""
 from __future__ import annotations
 
-import os
 import streamlit as st
 import pandas as pd
 
@@ -23,6 +22,11 @@ st.set_page_config(
 # ---------------------------------------------------------------------------
 def _get_model_map() -> dict:
     model_map = {}
+    try:
+        from clinical_llm_eval.models.ollama_connector import OllamaConnector
+        model_map["Ollama Local (BioMistral / Meditron)"] = OllamaConnector
+    except ImportError:
+        pass
     try:
         from clinical_llm_eval.models.mistral_connector import MistralConnector
         model_map["Mistral (mistral-small)"] = MistralConnector
@@ -165,24 +169,35 @@ def _score_response(question: str, response: str, reference: str) -> None:
     safety = SafetyFlagEvaluator()
 
     scores = rouge.score(response, reference)
-    judge_score = judge.score(question, response, reference)
-    is_hallucination = halluc.detect(response, reference)
-    is_unsafe = safety.flag(response)
+    judge_detail = judge.score_detailed(question, response, reference)
+    halluc_detail = halluc.detect_detailed(response, reference, question)
+    safety_detail = safety.evaluate_safety(response, question)
 
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("📊 ROUGE-L", f"{scores['rouge_l']:.3f}")
-    col2.metric("🧠 LLM Judge", f"{judge_score:.1f} / 5")
-    col3.metric("🔍 Hallucination", "⚠️ Detected" if is_hallucination else "✅ Clean")
-    col4.metric("🛡️ Safety", "🚨 Flagged" if is_unsafe else "✅ Safe")
+    col2.metric("🧠 Clinical Judge", f"{judge_detail['overall_score']:.1f} / 5")
+    col3.metric("🔍 Hallucination", "⚠️ Detected" if halluc_detail["is_hallucination"] else "✅ Clean")
+    col4.metric("🛡️ Safety", "🚨 Flagged" if safety_detail["is_flagged"] else "✅ Safe")
 
-    with st.expander("Score details"):
+    with st.expander("🔬 Detailed Clinical Diagnostics", expanded=True):
         st.json({
-            "rouge_1": scores["rouge_1"],
-            "rouge_2": scores["rouge_2"],
-            "rouge_l": scores["rouge_l"],
-            "llm_judge_score": judge_score,
-            "hallucination": is_hallucination,
-            "safety_flag": is_unsafe,
+            "metrics": {
+                "rouge_1": scores["rouge_1"],
+                "rouge_2": scores["rouge_2"],
+                "rouge_l": scores["rouge_l"],
+                "bert_score": scores.get("bert_score", 0.0),
+            },
+            "judge_breakdown": judge_detail,
+            "hallucination_analysis": {
+                "is_hallucination": halluc_detail["is_hallucination"],
+                "hallucination_score": halluc_detail["hallucination_score"],
+                "unsupported_terms": halluc_detail["unsupported_terms"],
+            },
+            "safety_analysis": {
+                "is_flagged": safety_detail["is_flagged"],
+                "risk_categories": safety_detail["risk_categories"],
+                "has_clinical_hedges": safety_detail["has_clinical_hedges"],
+            },
         })
 
 
@@ -206,7 +221,7 @@ def _evaluate_live(question: str, reference: str, model_names: list, model_map: 
             "Response": response,
             "ROUGE-L": scores["rouge_l"],
             "LLM Judge": judge.score(question, response, reference),
-            "Hallucination": "⚠️ Detected" if halluc.detect(response, reference) else "✅ Clean",
+            "Hallucination": "⚠️ Detected" if halluc.detect(response, reference, question) else "✅ Clean",
             "Safety": "🚨 Flagged" if safety.flag(response) else "✅ Safe",
         })
     return results
@@ -225,7 +240,6 @@ def _display_results(results: list[dict]) -> None:
 
 def _run_batch_eval(dataset_name: str, n_samples: int) -> None:
     """Run evaluators across a batch of samples and display results."""
-    from clinical_llm_eval.data.loader import load_dataset
 
     samples = load_dataset(dataset_name, n_samples=n_samples)
     rouge = RougeEvaluator()
