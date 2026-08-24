@@ -9,11 +9,11 @@ from pathlib import Path
 DatasetName = Literal["medqa", "pubmedqa", "medmcqa", "sample"]
 
 
-def load_dataset(name: DatasetName = "sample", n_samples: int = 50) -> list[dict]:
-    """Load a clinical QA dataset.
+def load_dataset(name: str = "sample", n_samples: int = 50) -> list[dict]:
+    """Load a clinical QA dataset from built-in sources, HF, or custom local files.
 
     Args:
-        name: Dataset identifier. Use 'sample' for local demo data.
+        name: Dataset identifier ('medqa', 'pubmedqa', 'medmcqa', 'sample', or a path to .csv/.json/.jsonl).
         n_samples: Maximum number of samples to return.
 
     Returns:
@@ -21,6 +21,11 @@ def load_dataset(name: DatasetName = "sample", n_samples: int = 50) -> list[dict
     """
     if name == "sample":
         return _load_sample_data(n_samples)
+
+    # Check for local custom dataset file
+    path = Path(name)
+    if path.is_file() or name.endswith((".csv", ".json", ".jsonl")):
+        return _load_custom_file(path, n_samples)
 
     try:
         from datasets import load_dataset as hf_load
@@ -51,7 +56,7 @@ def load_dataset(name: DatasetName = "sample", n_samples: int = 50) -> list[dict
             answer_text = f"{letter}. {correct_choice}"
             samples.append({
                 "question": question_text,
-                "answer": answer_text
+                "answer": answer_text,
             })
     elif name == "pubmedqa":
         ds = hf_load("pubmed_qa", name="pqa_labeled", split="train", trust_remote_code=True)
@@ -67,7 +72,46 @@ def load_dataset(name: DatasetName = "sample", n_samples: int = 50) -> list[dict
             for row in ds.select(range(min(n_samples, len(ds))))
         ]
     else:
-        raise ValueError(f"Unknown dataset: {name}")
+        raise ValueError(f"Unknown dataset or missing file: {name}")
+
+    return samples
+
+
+def _load_custom_file(path: Path, n_samples: int) -> list[dict]:
+    """Load custom dataset from CSV, JSON, or JSONL file."""
+    if not path.exists():
+        raise FileNotFoundError(f"Custom dataset file not found: {path}")
+
+    samples: list[dict] = []
+
+    if path.suffix.lower() == ".csv":
+        import pandas as pd
+        df = pd.read_csv(path)
+        q_col = next((c for c in df.columns if c.lower() in ["question", "prompt", "query", "input"]), df.columns[0])
+        a_col = next((c for c in df.columns if c.lower() in ["answer", "reference", "target", "ground_truth", "output"]), df.columns[1] if len(df.columns) > 1 else df.columns[0])
+        for _, row in df.head(n_samples).iterrows():
+            samples.append({"question": str(row[q_col]), "answer": str(row[a_col])})
+
+    elif path.suffix.lower() == ".jsonl":
+        with open(path, "r", encoding="utf-8") as f:
+            for line in f:
+                if not line.strip():
+                    continue
+                row = json.loads(line)
+                q = row.get("question") or row.get("prompt") or row.get("input", "")
+                a = row.get("answer") or row.get("reference") or row.get("target", "")
+                samples.append({"question": str(q), "answer": str(a)})
+                if len(samples) >= n_samples:
+                    break
+
+    elif path.suffix.lower() == ".json":
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        if isinstance(data, list):
+            for row in data[:n_samples]:
+                q = row.get("question") or row.get("prompt") or row.get("input", "")
+                a = row.get("answer") or row.get("reference") or row.get("target", "")
+                samples.append({"question": str(q), "answer": str(a)})
 
     return samples
 

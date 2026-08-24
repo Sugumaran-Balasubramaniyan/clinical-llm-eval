@@ -156,3 +156,21 @@ def test_llm_judge_score_detailed_fallback():
     assert "overall_score" in res
     assert 1.0 <= res["overall_score"] <= 5.0
 
+
+def test_custom_json_loader(tmp_path):
+    import json
+    from clinical_llm_eval.data.loader import load_dataset
+    custom_file = tmp_path / "custom_clinical_cases.json"
+    custom_data = [
+        {"question": "Patient has acute appendicitis", "answer": "Appendectomy"},
+        {"question": "Patient has asthma exacerbation", "answer": "Albuterol and systemic steroids"},
+    ]
+    with open(custom_file, "w") as f:
+        json.dump(custom_data, f)
+
+    loaded = load_dataset(str(custom_file), n_samples=5)
+    assert len(loaded) == 2
+    assert loaded[0]["question"] == "Patient has acute appendicitis"
+    assert loaded[0]["answer"] == "Appendectomy"
+
+
