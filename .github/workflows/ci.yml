@@ -27,19 +27,20 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install rouge-score pandas numpy python-dotenv pytest pytest-cov
+          pip install -e ".[dev]"
+
+      - name: Lint with ruff
+        run: ruff check .
 
       - name: Run tests
-        run: pytest tests/ -v --tb=long
+        run: pytest tests/ -v --tb=short
         env:
           PYTHONPATH: ${{ github.workspace }}
           MISTRAL_API_KEY: dummy
           OPENAI_API_KEY: dummy
           ANTHROPIC_API_KEY: dummy
-
-      - name: Lint with ruff (non-blocking)
-        if: always()
-        run: pip install ruff && ruff check . --ignore E501,E402,F401 || true
+          GEMINI_API_KEY: dummy
+          GOOGLE_API_KEY: dummy
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true

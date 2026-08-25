@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from clinical_llm_eval.config import BenchmarkConfig
 from clinical_llm_eval.evaluators.calculation_eval import CalculationEvaluator
+from clinical_llm_eval.evaluators.calibration_eval import CalibrationEvaluator
+from clinical_llm_eval.evaluators.clinical_nli import ClinicalNLIEvaluator
 from clinical_llm_eval.evaluators.hallucination import HallucinationDetector
 from clinical_llm_eval.evaluators.llm_judge import LLMJudgeEvaluator
 from clinical_llm_eval.evaluators.mcqa_eval import MCQAEvaluator
@@ -24,6 +26,8 @@ __all__ = [
     "SafetyFlagEvaluator",
     "MCQAEvaluator",
     "CalculationEvaluator",
+    "CalibrationEvaluator",
+    "ClinicalNLIEvaluator",
     "run_evaluation",
     "run_evaluation_async",
     "run_benchmark",
