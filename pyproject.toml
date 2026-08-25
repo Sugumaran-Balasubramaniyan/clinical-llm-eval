@@ -48,3 +48,11 @@ clinical-llm-eval = "clinical_llm_eval.eval_pipeline:main"
 where = ["."]
 include = ["clinical_llm_eval*"]
 exclude = ["tests*", "reports/output*"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = ["E501", "E402"]

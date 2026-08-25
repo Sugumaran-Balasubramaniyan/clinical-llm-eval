@@ -684,7 +684,7 @@ a:hover {{ text-decoration: underline; }}
     <footer>
         <div>Clinical LLM Evaluation Framework · Powered by Chart.js & PyTorch</div>
         <div>
-            <a href="https://github.com/Sugumaran-Balasubramaniyan/clinical-llm-eval" target="_blank" rel="noopener">GitHub</a> · 
+            <a href="https://github.com/Sugumaran-Balasubramaniyan/clinical-llm-eval" target="_blank" rel="noopener">GitHub</a> ·
             <a href="https://sugumaran-clinical-llm-eval.hf.space" target="_blank" rel="noopener">HuggingFace Spaces</a>
         </div>
     </footer>
