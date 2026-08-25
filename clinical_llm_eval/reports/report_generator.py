@@ -10,6 +10,8 @@ from typing import Any
 
 import pandas as pd
 
+from clinical_llm_eval.reports.cost_tracker import CostTracker
+
 
 class ReportGenerator:
     """Generates multi-format evaluation reports (CSV, JSON, HTML, Markdown Leaderboard, JSONL)."""
@@ -109,6 +111,15 @@ class ReportGenerator:
             if avg_latency is not None:
                 model_stats["avg_latency_ms"] = avg_latency
 
+            # 5. Token Usage & Cost Profiling
+            cost_summary = CostTracker().compute_model_cost_summary(group)
+            model_stats["total_cost_usd"] = cost_summary["total_cost_usd"]
+            model_stats["cost_per_100_queries"] = cost_summary["cost_per_100_queries"]
+            model_stats["cost_per_correct_answer"] = cost_summary["cost_per_correct_answer"]
+            model_stats["total_tokens"] = cost_summary["total_tokens"]
+            model_stats["total_prompt_tokens"] = cost_summary["total_prompt_tokens"]
+            model_stats["total_completion_tokens"] = cost_summary["total_completion_tokens"]
+
             summary["models"][str(model)] = model_stats
 
         return summary
@@ -156,6 +167,9 @@ class ReportGenerator:
             header.append("Avg Latency")
             align.append(":---:")
 
+        header.extend(["Total Cost ($)", "Cost/100 Qs ($)"])
+        align.extend([":---:", ":---:"])
+
         lines.append(" | ".join(header) + " |")
         lines.append(" | ".join(align) + " |")
 
@@ -182,6 +196,10 @@ class ReportGenerator:
             if has_latency:
                 lat = f"{stats.get('avg_latency_ms', 0.0):.1f}ms" if "avg_latency_ms" in stats else "N/A"
                 row.append(lat)
+
+            tot_cost = stats.get("total_cost_usd", 0.0)
+            cost_100 = stats.get("cost_per_100_queries", 0.0)
+            row.extend([f"${tot_cost:.4f}", f"${cost_100:.4f}"])
 
             lines.append(" | ".join(row) + " |")
 
@@ -242,6 +260,10 @@ class ReportGenerator:
                 else:
                     latency_td = """<td><span class="badge badge-neutral">N/A</span></td>"""
 
+            tot_cost = stats.get("total_cost_usd", 0.0)
+            cost_100 = stats.get("cost_per_100_queries", 0.0)
+            cost_td = f"""<td><code>${tot_cost:.4f}</code></td><td><code>${cost_100:.4f}</code></td>"""
+
             table_rows += f"""
             <tr>
                 <td><strong>{html.escape(model)}</strong></td>
@@ -253,6 +275,7 @@ class ReportGenerator:
                 <td style="color:{color_rate(stats.get('hallucination_rate', 0.0), low_is_good=True)}">{stats.get('hallucination_rate', 0.0)*100:.1f}%</td>
                 <td style="color:{color_rate(stats.get('safety_flag_rate', 0.0), low_is_good=True)}">{stats.get('safety_flag_rate', 0.0)*100:.1f}%</td>
                 {latency_td}
+                {cost_td}
             </tr>"""
 
         # 2. Build Chart.js Radar Chart Datasets (5 normalized axes: 0-100%)
@@ -370,6 +393,12 @@ class ReportGenerator:
                     lat_val = float(row["latency_ms"])
                     badges_summary.append(f'<span class="badge badge-neutral">⏱️ {lat_val:.0f}ms</span>')
                     badges_detail.append(f'<span class="badge badge-neutral">⏱️ Latency: {lat_val:.1f} ms</span>')
+
+                # Cost and tokens badge
+                if "estimated_cost_usd" in row or "total_tokens" in row:
+                    toks = int(row.get("total_tokens", 0))
+                    c_val = float(row.get("estimated_cost_usd", 0.0))
+                    badges_detail.append(f'<span class="badge badge-neutral">💰 {toks} tokens (${c_val:.5f})</span>')
 
                 q_preview = question[:110] + ("..." if len(question) > 110 else "")
                 badges_summary_html = " ".join(badges_summary)
@@ -639,6 +668,8 @@ a:hover {{ text-decoration: underline; }}
                     <th>Halluc%</th>
                     <th>Safety%</th>
                     {th_latency}
+                    <th>Total Cost</th>
+                    <th>Cost/100 Qs</th>
                 </tr>
             </thead>
             <tbody>

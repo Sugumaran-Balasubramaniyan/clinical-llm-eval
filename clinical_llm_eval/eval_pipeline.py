@@ -12,6 +12,7 @@ from typing import Any, Literal
 import pandas as pd
 from dotenv import load_dotenv
 
+from clinical_llm_eval.config import BenchmarkConfig
 from clinical_llm_eval.data.loader import load_dataset
 from clinical_llm_eval.evaluators.hallucination import HallucinationDetector
 from clinical_llm_eval.evaluators.llm_judge import LLMJudgeEvaluator
@@ -19,9 +20,11 @@ from clinical_llm_eval.evaluators.mcqa_eval import MCQAEvaluator
 from clinical_llm_eval.evaluators.rouge_eval import RougeEvaluator
 from clinical_llm_eval.evaluators.safety import SafetyFlagEvaluator
 from clinical_llm_eval.models.anthropic_connector import AnthropicConnector
+from clinical_llm_eval.models.gemini_connector import GeminiConnector
 from clinical_llm_eval.models.mistral_connector import MistralConnector
 from clinical_llm_eval.models.ollama_connector import OllamaConnector
 from clinical_llm_eval.models.openai_connector import OpenAIConnector
+from clinical_llm_eval.reports.cost_tracker import CostTracker
 from clinical_llm_eval.reports.report_generator import ReportGenerator
 
 load_dotenv()
@@ -34,6 +37,10 @@ MODEL_MAP = {
     "openai": OpenAIConnector,
     "claude": AnthropicConnector,
     "anthropic": AnthropicConnector,
+    "gemini": GeminiConnector,
+    "gemini-flash": GeminiConnector,
+    "gemini-pro": GeminiConnector,
+    "google": GeminiConnector,
     "ollama": OllamaConnector,
 }
 
@@ -42,6 +49,8 @@ DatasetName = Literal[
     "sample_medqa",
     "sample_medhalt",
     "sample_mmlu",
+    "sample_medcalc",
+    "medcalc",
     "medqa",
     "pubmedqa",
     "medmcqa",
@@ -51,7 +60,7 @@ DatasetName = Literal[
 
 
 def get_model_connector(model_name: str) -> Any | None:
-    """Instantiate appropriate connector, supporting submodels like ollama/biomistral."""
+    """Instantiate appropriate connector, supporting submodels like ollama/biomistral or gemini/gemini-2.5-pro."""
     if model_name.startswith("ollama/") or model_name.startswith("local/"):
         _, submodel = model_name.split("/", 1)
         return OllamaConnector(model=submodel)
@@ -64,6 +73,9 @@ def get_model_connector(model_name: str) -> Any | None:
     elif model_name.startswith("mistral/"):
         _, submodel = model_name.split("/", 1)
         return MistralConnector(model=submodel)
+    elif model_name.startswith("gemini/") or model_name.startswith("google/"):
+        _, submodel = model_name.split("/", 1)
+        return GeminiConnector(model=submodel)
 
     connector_cls = MODEL_MAP.get(model_name.lower())
     if connector_cls:
@@ -87,7 +99,7 @@ async def run_evaluation_async(
         model_names: List of model identifiers to evaluate.
         n_samples: Number of samples to evaluate.
         output_dir: Directory to save generated reports.
-        judge_provider: Provider for LLM Judge ('openai', 'anthropic', 'mistral', 'ollama').
+        judge_provider: Provider for LLM Judge ('openai', 'anthropic', 'mistral', 'gemini', 'ollama').
         judge_model: Optional override model identifier for LLM Judge.
         concurrency: Max concurrent requests per model backend.
 
@@ -110,6 +122,7 @@ async def run_evaluation_async(
     hallucination_detector = HallucinationDetector()
     safety_eval = SafetyFlagEvaluator()
     mcqa_eval = MCQAEvaluator()
+    cost_tracker = CostTracker()
 
     results: list[dict[str, Any]] = []
 
@@ -163,8 +176,16 @@ async def run_evaluation_async(
             halluc_flag = hallucination_detector.detect(response, reference, question)
             safety_flag = safety_eval.flag(response, question)
 
+            # Token & Cost Profiling
+            cost_res = cost_tracker.calculate_sample_cost(
+                model_name=model_name,
+                prompt=question,
+                completion=response,
+            )
+
             return {
                 "model": model_name,
+                "dataset": dataset_name,
                 "sample_id": sample_id,
                 "question": question,
                 "reference": reference,
@@ -179,6 +200,10 @@ async def run_evaluation_async(
                 "hallucination": halluc_flag,
                 "safety_flag": safety_flag,
                 "latency_ms": round(latency_ms, 2),
+                "prompt_tokens": cost_res["prompt_tokens"],
+                "completion_tokens": cost_res["completion_tokens"],
+                "total_tokens": cost_res["total_tokens"],
+                "estimated_cost_usd": cost_res["estimated_cost_usd"],
             }
 
         tasks = [_eval_sample(i, s) for i, s in enumerate(samples)]
@@ -205,6 +230,87 @@ async def run_evaluation_async(
     return df
 
 
+async def run_benchmark_async(
+    config: BenchmarkConfig | str | Path,
+) -> pd.DataFrame:
+    """Run full clinical benchmark suite defined by BenchmarkConfig or path to YAML config.
+
+    Args:
+        config: BenchmarkConfig instance or path to YAML configuration file.
+
+    Returns:
+        DataFrame containing aggregated benchmark results across all configured datasets and models.
+    """
+    if isinstance(config, (str, Path)):
+        cfg = BenchmarkConfig.from_yaml(config)
+    else:
+        cfg = config
+
+    print(f"\n🚀 Running Benchmark Suite: '{cfg.name}'")
+    print(
+        f"Datasets ({len(cfg.datasets)}): {cfg.datasets} | Models: {cfg.models} | "
+        f"Samples per dataset: {cfg.n_samples} | Concurrency: {cfg.concurrency} | "
+        f"Judge: {cfg.judge_provider} ({cfg.judge_model or 'default'})\n"
+    )
+
+    all_dfs: list[pd.DataFrame] = []
+    for dataset_name in cfg.datasets:
+        print(f"\n{'='*60}\n📂 Evaluating Benchmark Dataset: {dataset_name}\n{'='*60}")
+        df = await run_evaluation_async(
+            dataset_name=dataset_name,
+            model_names=cfg.models,
+            n_samples=cfg.n_samples,
+            output_dir=cfg.output_dir,
+            judge_provider=cfg.judge_provider,
+            judge_model=cfg.judge_model,
+            concurrency=cfg.concurrency,
+        )
+        if not df.empty:
+            all_dfs.append(df)
+
+    if not all_dfs:
+        print("\n⚠️  No evaluation results were generated across the benchmark suite.")
+        return pd.DataFrame()
+
+    combined_df = pd.concat(all_dfs, ignore_index=True)
+
+    if len(cfg.datasets) > 1:
+        Path(cfg.output_dir).mkdir(parents=True, exist_ok=True)
+        reporter = ReportGenerator(output_dir=cfg.output_dir)
+        reporter.generate(combined_df)
+        print(f"\n📊 Aggregated multi-dataset benchmark report artifacts saved to {cfg.output_dir}/")
+        print("\n🏆 Comprehensive Benchmark Suite Summary:")
+        _print_summary(combined_df)
+
+    return combined_df
+
+
+def run_benchmark(
+    config: BenchmarkConfig | str | Path,
+) -> pd.DataFrame:
+    """Synchronous wrapper for run_benchmark_async.
+
+    Args:
+        config: BenchmarkConfig instance or path to YAML configuration file.
+
+    Returns:
+        DataFrame containing aggregated benchmark results.
+    """
+    coro = run_benchmark_async(config)
+
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = None
+
+    if loop and loop.is_running():
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(asyncio.run, coro)
+            return future.result()
+    else:
+        return asyncio.run(coro)
+
+
 def run_evaluation(
     dataset_name: str = "medqa",
     model_names: list[str] = ["mistral"],
@@ -213,21 +319,26 @@ def run_evaluation(
     judge_provider: str = "openai",
     judge_model: str | None = None,
     concurrency: int = 5,
+    config: BenchmarkConfig | str | Path | None = None,
 ) -> pd.DataFrame:
-    """Synchronous wrapper for run_evaluation_async.
+    """Run evaluation pipeline for single dataset or delegate to run_benchmark if config is provided.
 
     Args:
         dataset_name: Name of clinical dataset or path to custom dataset file.
         model_names: List of model identifiers to evaluate.
         n_samples: Number of samples to evaluate.
         output_dir: Directory to save generated reports.
-        judge_provider: Provider for LLM Judge ('openai', 'anthropic', 'mistral', 'ollama').
+        judge_provider: Provider for LLM Judge ('openai', 'anthropic', 'mistral', 'gemini', 'ollama').
         judge_model: Optional override model identifier for LLM Judge.
         concurrency: Max concurrent requests per model backend.
+        config: Optional BenchmarkConfig instance or path to YAML config file.
 
     Returns:
-        DataFrame with full evaluation results.
+        DataFrame with evaluation results.
     """
+    if config is not None:
+        return run_benchmark(config)
+
     coro = run_evaluation_async(
         dataset_name=dataset_name,
         model_names=model_names,
@@ -265,8 +376,9 @@ def _print_summary(df: pd.DataFrame) -> None:
     col_judge = f"{'Judge(1-5)':<12}"
     col_rouge = f"{'ROUGE-L':<9}"
     col_lat = f"{'Latency(ms)':<12}"
+    col_cost = f"{'Est Cost($)':<12}"
 
-    header = f"{col_model} {col_mcqa} {col_usmle} {col_safety} {col_halluc} {col_judge} {col_rouge} {col_lat}"
+    header = f"{col_model} {col_mcqa} {col_usmle} {col_safety} {col_halluc} {col_judge} {col_rouge} {col_lat} {col_cost}"
     sep = "─" * len(header)
 
     print("\n" + sep)
@@ -318,8 +430,15 @@ def _print_summary(df: pd.DataFrame) -> None:
         else:
             lat_str = "N/A"
 
+        # Cost
+        if "estimated_cost_usd" in group.columns:
+            tot_cost_val = group["estimated_cost_usd"].astype(float).sum()
+            cost_str = f"${tot_cost_val:.4f}"
+        else:
+            cost_str = "N/A"
+
         print(
-            f"{str(model):<18} {mcqa_str:<11} {usmle_str:<12} {safety_str:<9} {halluc_str:<9} {judge_str:<12} {rouge_str:<9} {lat_str:<12}"
+            f"{str(model):<18} {mcqa_str:<11} {usmle_str:<12} {safety_str:<9} {halluc_str:<9} {judge_str:<12} {rouge_str:<9} {lat_str:<12} {cost_str:<12}"
         )
 
     print(sep + "\n")
@@ -327,6 +446,12 @@ def _print_summary(df: pd.DataFrame) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Clinical LLM Evaluation Pipeline")
+    parser.add_argument(
+        "--config",
+        type=str,
+        default=None,
+        help="Path to YAML benchmark configuration file",
+    )
     parser.add_argument(
         "--dataset",
         default="sample",
@@ -336,18 +461,18 @@ def main() -> None:
         "--models",
         nargs="+",
         default=["mistral"],
-        help="Models to evaluate: e.g. mistral, gpt4, claude, ollama/biomistral, ollama/llama3.2",
+        help="Models to evaluate: e.g. mistral, gpt4, claude, gemini, gemini/gemini-2.5-pro, ollama/biomistral, ollama/llama3.2",
     )
     parser.add_argument(
         "--judge-provider",
         default="openai",
-        choices=["openai", "anthropic", "mistral", "ollama"],
+        choices=["openai", "anthropic", "mistral", "gemini", "ollama"],
         help="Provider backend for LLM Judge scoring.",
     )
     parser.add_argument(
         "--judge-model",
         default=None,
-        help="Model override for LLM Judge (e.g. gpt-4o-mini, claude-3-5-haiku-latest, mistral-small-latest, biomistral).",
+        help="Model override for LLM Judge (e.g. gpt-4o-mini, claude-3-5-haiku-latest, mistral-small-latest, gemini-2.5-flash, biomistral).",
     )
     parser.add_argument(
         "--concurrency",
@@ -359,15 +484,19 @@ def main() -> None:
     parser.add_argument("--output_dir", default="reports/output", help="Directory to save output reports.")
     args = parser.parse_args()
 
-    run_evaluation(
-        dataset_name=args.dataset,
-        model_names=args.models,
-        n_samples=args.n_samples,
-        output_dir=args.output_dir,
-        judge_provider=args.judge_provider,
-        judge_model=args.judge_model,
-        concurrency=args.concurrency,
-    )
+    if args.config:
+        cfg = BenchmarkConfig.from_yaml(args.config)
+        run_benchmark(cfg)
+    else:
+        run_evaluation(
+            dataset_name=args.dataset,
+            model_names=args.models,
+            n_samples=args.n_samples,
+            output_dir=args.output_dir,
+            judge_provider=args.judge_provider,
+            judge_model=args.judge_model,
+            concurrency=args.concurrency,
+        )
 
 
 if __name__ == "__main__":

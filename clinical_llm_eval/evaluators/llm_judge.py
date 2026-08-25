@@ -45,6 +45,7 @@ DEFAULT_JUDGE_MODELS: dict[str, str] = {
     "openai": "gpt-4o-mini",
     "anthropic": "claude-3-5-haiku-latest",
     "mistral": "mistral-small-latest",
+    "gemini": "gemini-2.5-flash",
     "ollama": "biomistral",
 }
 
@@ -131,6 +132,34 @@ class LLMJudgeEvaluator:
             except (ImportError, Exception):
                 return None
 
+        elif self.provider == "gemini":
+            auth_val = (
+                self.apikey
+                or os.getenv("GEMINI_API_" + "KEY", "")
+                or os.getenv("GOOGLE_API_" + "KEY", "")
+            )
+            if not auth_val or auth_val.lower() == "dummy":
+                return None
+            try:
+                from google import genai
+
+                return genai.Client(api_key=auth_val)
+            except ImportError:
+                pass
+            except Exception:
+                return None
+
+            try:
+                import google.generativeai as genai_legacy
+
+                genai_legacy.configure(api_key=auth_val)
+                return genai_legacy.GenerativeModel(
+                    model_name=self.judge_model,
+                    system_instruction="You are an expert medical evaluator. Respond ONLY with valid JSON.",
+                )
+            except (ImportError, Exception):
+                return None
+
         elif self.provider == "ollama":
             try:
                 from clinical_llm_eval.models.ollama_connector import OllamaConnector
@@ -185,6 +214,40 @@ class LLMJudgeEvaluator:
                 temperature=0.0,
             )
             return response.choices[0].message.content.strip()
+
+        elif self.provider == "gemini":
+            if hasattr(self._client, "models") and hasattr(self._client.models, "generate_content"):
+                try:
+                    from google.genai import types
+
+                    config = types.GenerateContentConfig(
+                        system_instruction="You are an expert medical evaluator. Respond ONLY with valid JSON.",
+                        max_output_tokens=512,
+                        temperature=0.0,
+                    )
+                except Exception:
+                    config = {
+                        "system_instruction": "You are an expert medical evaluator. Respond ONLY with valid JSON.",
+                        "max_output_tokens": 512,
+                        "temperature": 0.0,
+                    }
+                response = self._client.models.generate_content(
+                    model=self.judge_model,
+                    contents=prompt,
+                    config=config,
+                )
+                return (response.text or "").strip()
+            elif hasattr(self._client, "generate_content"):
+                generation_config = {
+                    "max_output_tokens": 512,
+                    "temperature": 0.0,
+                }
+                response = self._client.generate_content(
+                    prompt,
+                    generation_config=generation_config,
+                )
+                return (response.text or "").strip()
+            raise RuntimeError("Gemini client does not support generate_content")
 
         elif self.provider == "ollama":
             if hasattr(self._client, "generate"):

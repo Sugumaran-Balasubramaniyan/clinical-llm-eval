@@ -4,6 +4,7 @@ from .base import BaseModelConnector
 from .mistral_connector import MistralConnector
 from .openai_connector import OpenAIConnector
 from .anthropic_connector import AnthropicConnector
+from .gemini_connector import GeminiConnector
 from .ollama_connector import OllamaConnector
 
 __all__ = [
@@ -11,5 +12,6 @@ __all__ = [
     "MistralConnector",
     "OpenAIConnector",
     "AnthropicConnector",
+    "GeminiConnector",
     "OllamaConnector",
 ]

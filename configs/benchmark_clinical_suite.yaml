@@ -1,0 +1,31 @@
+name: "Clinical Benchmark Suite - Comprehensive Evaluation"
+datasets:
+  - "sample_medqa"
+  - "sample_mmlu"
+  - "sample_medhalt"
+  - "sample_medcalc"
+models:
+  - "mistral"
+  - "gpt-4o-mini"
+  - "claude"
+  - "gemini-flash"
+  - "ollama/biomistral"
+n_samples: 50
+concurrency: 5
+judge_provider: "openai"
+judge_model: "gpt-4o-mini"
+output_dir: "reports/output"
+temperature: 0.2
+max_tokens: 256
+metadata:
+  suite_version: "1.0.0"
+  description: "Comprehensive multi-benchmark clinical evaluation covering MedQA (USMLE), MMLU-Clinical, Med-HALT (Hallucination), and MedCalc (Clinical Calculations) across local and cloud LLMs."
+  benchmarks:
+    - name: "MedQA (USMLE)"
+      focus: "Clinical decision making & board examination knowledge"
+    - name: "MMLU-Clinical"
+      focus: "Clinical medicine, medical genetics, and anatomy knowledge"
+    - name: "Med-HALT"
+      focus: "Medical hallucination detection and reasoning safety"
+    - name: "MedCalc"
+      focus: "Clinical formulas, unit conversions, and quantitative dosing"

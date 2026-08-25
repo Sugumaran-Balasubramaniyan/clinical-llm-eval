@@ -15,10 +15,12 @@ DatasetName = Literal[
     "medmcqa",
     "mmlu_clinical",
     "med_halt",
+    "medcalc",
     "sample",
     "sample_medqa",
     "sample_medhalt",
     "sample_mmlu",
+    "sample_medcalc",
 ]
 
 MMLU_CLINICAL_SUBJECTS = [
@@ -87,6 +89,8 @@ def load_dataset(name: str = "sample", n_samples: int = 50) -> list[dict[str, An
         return _load_sample_data(n_samples, "sample_mmlu")
     elif lower_name in ("sample_medhalt", "sample_med_halt"):
         return _load_sample_data(n_samples, "sample_medhalt")
+    elif lower_name in ("sample_medcalc", "sample_calc", "medcalc"):
+        return _load_sample_data(n_samples, "sample_medcalc")
 
     # 2. Local custom dataset file
     path = Path(clean_name)
@@ -116,6 +120,8 @@ def _load_sample_data(n_samples: int = 50, sample_type: str = "sample_medqa") ->
         target_file = data_dir / "sample_mmlu.json"
     elif sample_type in ("sample_medhalt", "med_halt", "medhalt"):
         target_file = data_dir / "sample_medhalt.json"
+    elif sample_type in ("sample_medcalc", "medcalc", "sample_calc"):
+        target_file = data_dir / "sample_medcalc.json"
     else:
         target_file = data_dir / "sample_medqa.json"
 
@@ -138,26 +144,48 @@ def _load_sample_data(n_samples: int = 50, sample_type: str = "sample_medqa") ->
             logger.warning("Failed to parse %s: %s", target_file, e)
 
     # Built-in fallback if file is missing or unparseable
-    fallback_items = [
-        {
-            "question": "A 45-year-old man presents with chest pain radiating to the left arm, diaphoresis, and nausea. ECG shows ST elevation in leads II, III, and aVF. What is the most likely diagnosis?",
-            "answer": "Inferior ST-elevation myocardial infarction (STEMI)",
-            "options": None,
-            "metadata": {"dataset": sample_type},
-        },
-        {
-            "question": "A patient presents with fever, productive cough, and consolidation on chest X-ray. Gram stain shows gram-positive diplococci. What is the most likely causative organism?",
-            "answer": "Streptococcus pneumoniae",
-            "options": None,
-            "metadata": {"dataset": sample_type},
-        },
-        {
-            "question": "A 30-year-old woman presents with fatigue, weight gain, cold intolerance, and constipation. TSH is elevated, free T4 is low. What is the diagnosis?",
-            "answer": "Primary hypothyroidism",
-            "options": None,
-            "metadata": {"dataset": sample_type},
-        },
-    ]
+    if sample_type in ("sample_medcalc", "medcalc", "sample_calc"):
+        fallback_items = [
+            {
+                "question": "Calculate the estimated GFR (CKD-EPI 2021) for a 60-year-old female with creatinine 1.2 mg/dL.",
+                "answer": "The calculated eGFR is 47.8 mL/min/1.73m2.",
+                "options": None,
+                "metadata": {"dataset": sample_type, "unit": "mL/min/1.73m2", "expected_value": 47.8},
+            },
+            {
+                "question": "Calculate the serum anion gap for Na = 140 mEq/L, Cl = 102 mEq/L, and HCO3 = 22 mEq/L.",
+                "answer": "Anion gap is 16 mEq/L.",
+                "options": None,
+                "metadata": {"dataset": sample_type, "unit": "mEq/L", "expected_value": 16.0},
+            },
+            {
+                "question": "Calculate the CHA2DS2-VASc score for a 68-year-old female with hypertension, diabetes, and stroke.",
+                "answer": "Total CHA2DS2-VASc score is 6 points.",
+                "options": None,
+                "metadata": {"dataset": sample_type, "unit": "points", "expected_value": 6.0},
+            },
+        ]
+    else:
+        fallback_items = [
+            {
+                "question": "A 45-year-old man presents with chest pain radiating to the left arm, diaphoresis, and nausea. ECG shows ST elevation in leads II, III, and aVF. What is the most likely diagnosis?",
+                "answer": "Inferior ST-elevation myocardial infarction (STEMI)",
+                "options": None,
+                "metadata": {"dataset": sample_type},
+            },
+            {
+                "question": "A patient presents with fever, productive cough, and consolidation on chest X-ray. Gram stain shows gram-positive diplococci. What is the most likely causative organism?",
+                "answer": "Streptococcus pneumoniae",
+                "options": None,
+                "metadata": {"dataset": sample_type},
+            },
+            {
+                "question": "A 30-year-old woman presents with fatigue, weight gain, cold intolerance, and constipation. TSH is elevated, free T4 is low. What is the diagnosis?",
+                "answer": "Primary hypothyroidism",
+                "options": None,
+                "metadata": {"dataset": sample_type},
+            },
+        ]
     return [_format_item(**it) for it in fallback_items[:n_samples]]
 
 

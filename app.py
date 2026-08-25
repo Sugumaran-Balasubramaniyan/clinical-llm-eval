@@ -56,6 +56,12 @@ def _get_model_map() -> dict:
         model_map["Claude Haiku"] = AnthropicConnector
     except ImportError:
         pass
+    try:
+        from clinical_llm_eval.models.gemini_connector import GeminiConnector
+
+        model_map["Gemini 2.5 Flash"] = GeminiConnector
+    except ImportError:
+        pass
     return model_map
 
 
@@ -243,7 +249,7 @@ def main() -> None:
                 results = _evaluate_live(live_question, live_reference, selected_models, MODEL_MAP)
                 _display_results(results)
     else:
-        st.info("💡 Install `mistralai`, `openai`, or `anthropic` to enable live model querying.")
+        st.info("💡 Install `mistralai`, `openai`, `anthropic`, or `google-genai` to enable live model querying.")
 
 
 def _score_response(question: str, response: str, reference: str, options_str: str = "") -> None:

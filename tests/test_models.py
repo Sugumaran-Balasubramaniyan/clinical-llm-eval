@@ -112,11 +112,13 @@ def test_subclass_inheritance():
         MistralConnector,
         OpenAIConnector,
         AnthropicConnector,
+        GeminiConnector,
     )
     assert issubclass(OllamaConnector, BaseModelConnector)
     assert issubclass(MistralConnector, BaseModelConnector)
     assert issubclass(OpenAIConnector, BaseModelConnector)
     assert issubclass(AnthropicConnector, BaseModelConnector)
+    assert issubclass(GeminiConnector, BaseModelConnector)
 
 
 def test_ollama_connector_mock_generate_and_agenerate():
@@ -271,3 +273,82 @@ def test_report_generator_importable():
         assert rg is not None
     except ImportError:
         pytest.skip("pandas not installed")
+
+
+def test_gemini_connector_mock_genai():
+    """Verify GeminiConnector synchronous and asynchronous generation with google-genai style client."""
+    from clinical_llm_eval.models.gemini_connector import GeminiConnector
+
+    connector = GeminiConnector(model="gemini-2.5-flash", apikey="mock-val")
+    mock_client = MagicMock()
+    mock_resp = MagicMock()
+    mock_resp.text = "Administer epinephrine intramuscularly."
+    mock_client.models.generate_content.return_value = mock_resp
+
+    mock_async_resp = MagicMock()
+    mock_async_resp.text = "Administer epinephrine intramuscularly."
+
+    async def _mock_aio_generate(*args, **kwargs):
+        return mock_async_resp
+
+    mock_client.aio.models.generate_content = MagicMock(side_effect=_mock_aio_generate)
+    connector._client = mock_client
+
+    # Sync
+    res = connector.generate("Anaphylaxis treatment")
+    assert res == "Administer epinephrine intramuscularly."
+
+    # Async
+    res_async = asyncio.run(connector.agenerate("Anaphylaxis treatment"))
+    assert res_async == "Administer epinephrine intramuscularly."
+
+    # Async with metadata
+    meta = asyncio.run(connector.agenerate_with_metadata("Anaphylaxis treatment"))
+    assert meta["text"] == "Administer epinephrine intramuscularly."
+    assert meta["model"] == "gemini-2.5-flash"
+    assert meta["latency_ms"] >= 0.0
+
+
+def test_gemini_connector_mock_generativeai():
+    """Verify GeminiConnector fallback generation with google.generativeai style client."""
+    from clinical_llm_eval.models.gemini_connector import GeminiConnector
+
+    connector = GeminiConnector(model="gemini-1.5-pro", apikey="mock-val")
+    mock_client = MagicMock(spec=["generate_content", "generate_content_async"])
+    mock_resp = MagicMock()
+    mock_resp.text = "Order chest X-ray and sputum culture."
+    mock_client.generate_content.return_value = mock_resp
+
+    async def _mock_async_generate(*args, **kwargs):
+        return mock_resp
+
+    mock_client.generate_content_async = MagicMock(side_effect=_mock_async_generate)
+    connector._client = mock_client
+
+    res = connector.generate("Community-acquired pneumonia evaluation")
+    assert res == "Order chest X-ray and sputum culture."
+
+    res_async = asyncio.run(connector.agenerate("Community-acquired pneumonia evaluation"))
+    assert res_async == "Order chest X-ray and sputum culture."
+
+
+def test_gemini_connector_dummy_and_missing_auth():
+    """Verify GeminiConnector behavior when auth is dummy or missing."""
+    from clinical_llm_eval.models.gemini_connector import GeminiConnector
+
+    conn_dummy = GeminiConnector(model="gemini-2.5-flash", apikey="dummy")
+    assert conn_dummy._client is None
+    with pytest.raises(RuntimeError, match="Gemini client not initialized"):
+        conn_dummy.generate("Test prompt")
+
+    conn_none = GeminiConnector(model="gemini-2.5-flash", apikey="")
+    assert conn_none._client is None
+
+
+def test_gemini_connector_importable():
+    from clinical_llm_eval.models.gemini_connector import GeminiConnector
+    assert GeminiConnector is not None
+    conn = GeminiConnector(model="gemini-2.5-pro", apikey="dummy")
+    assert conn.model == "gemini-2.5-pro"
+    assert conn.name == "GeminiConnector"
+

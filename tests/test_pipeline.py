@@ -8,8 +8,10 @@ from unittest.mock import patch
 import pandas as pd
 import pytest
 
+from clinical_llm_eval.config import BenchmarkConfig
 from clinical_llm_eval.eval_pipeline import (
     get_model_connector,
+    run_benchmark,
     run_evaluation,
     run_evaluation_async,
     _print_summary,
@@ -309,6 +311,7 @@ class TestErrorHandlingAndFallbacks:
         assert get_model_connector("mistral") is not None
         assert get_model_connector("gpt4") is not None
         assert get_model_connector("claude") is not None
+        assert get_model_connector("gemini") is not None
         assert get_model_connector("ollama") is not None
 
         # Prefixed models
@@ -327,6 +330,10 @@ class TestErrorHandlingAndFallbacks:
         mistral_conn = get_model_connector("mistral/mistral-large-latest")
         assert mistral_conn is not None
         assert mistral_conn.model == "mistral-large-latest"
+
+        gemini_conn = get_model_connector("gemini/gemini-2.5-pro")
+        assert gemini_conn is not None
+        assert gemini_conn.model == "gemini-2.5-pro"
 
         # Unknown
         assert get_model_connector("invalid_unknown_model") is None
@@ -362,3 +369,90 @@ class TestCLIMain:
                 judge_model="gpt-4o-mini",
                 concurrency=8,
             )
+
+    def test_cli_main_with_config_argument(self, tmp_path):
+        """Test CLI main() invocation with --config argument."""
+        cfg_file = tmp_path / "test_suite_cli.yaml"
+        cfg = BenchmarkConfig(
+            name="CLI Test Suite",
+            datasets=["sample_medqa"],
+            models=["mistral"],
+            n_samples=5,
+            output_dir=str(tmp_path / "cli_out"),
+        )
+        cfg.to_yaml(cfg_file)
+
+        with patch("clinical_llm_eval.eval_pipeline.run_benchmark") as mock_benchmark:
+            with patch(
+                "sys.argv",
+                [
+                    "clinical-llm-eval",
+                    "--config", str(cfg_file),
+                ],
+            ):
+                cli_main()
+
+            mock_benchmark.assert_called_once()
+            called_config = mock_benchmark.call_args[0][0]
+            assert isinstance(called_config, BenchmarkConfig)
+            assert called_config.name == "CLI Test Suite"
+            assert called_config.datasets == ["sample_medqa"]
+            assert called_config.models == ["mistral"]
+            assert called_config.n_samples == 5
+
+
+class TestBenchmarkSuiteExecution:
+    """Test multi-dataset benchmark execution through run_benchmark."""
+
+    def test_run_benchmark_multi_dataset(self, tmp_path):
+        """Test run_benchmark aggregates results across multiple datasets."""
+        connector = DummyAsyncTestConnector()
+        cfg = BenchmarkConfig(
+            name="Multi Dataset Suite",
+            datasets=["sample_medqa", "sample_medhalt"],
+            models=["mock-model"],
+            n_samples=2,
+            output_dir=str(tmp_path / "bench_reports"),
+            concurrency=2,
+        )
+
+        with patch("clinical_llm_eval.eval_pipeline.get_model_connector", return_value=connector):
+            df = run_benchmark(cfg)
+
+        assert isinstance(df, pd.DataFrame)
+        assert len(df) == 4  # 2 samples * 2 datasets
+        assert "dataset" in df.columns
+        assert set(df["dataset"].unique()) == {"sample_medqa", "sample_medhalt"}
+        assert all(df["model"] == "mock-model")
+
+    def test_run_benchmark_from_yaml_path(self, tmp_path):
+        """Test run_benchmark accepts a YAML filepath string directly."""
+        connector = DummyAsyncTestConnector()
+        cfg_file = tmp_path / "suite.yaml"
+        cfg = BenchmarkConfig(
+            name="YAML Direct Path Suite",
+            datasets=["sample_medqa"],
+            models=["mock-model"],
+            n_samples=2,
+            output_dir=str(tmp_path / "direct_reports"),
+        )
+        cfg.to_yaml(cfg_file)
+
+        with patch("clinical_llm_eval.eval_pipeline.get_model_connector", return_value=connector):
+            df = run_benchmark(str(cfg_file))
+
+        assert len(df) == 2
+        assert "dataset" in df.columns
+
+    def test_run_evaluation_with_config_parameter(self, tmp_path):
+        """Test run_evaluation delegates to run_benchmark when config is passed."""
+        cfg = BenchmarkConfig(
+            name="Delegated Suite",
+            datasets=["sample_medqa"],
+            models=["mock-model"],
+            n_samples=2,
+        )
+        with patch("clinical_llm_eval.eval_pipeline.run_benchmark") as mock_bench:
+            run_evaluation(config=cfg)
+            mock_bench.assert_called_once_with(cfg)
+

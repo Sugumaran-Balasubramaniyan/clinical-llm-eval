@@ -1,0 +1,125 @@
+[
+  {
+    "question": "Calculate the estimated GFR (CKD-EPI 2021 creatinine equation) for a 60-year-old female with a serum creatinine of 1.2 mg/dL.",
+    "answer": "The calculated eGFR is 47.8 mL/min/1.73m2.",
+    "metadata": {
+      "dataset": "sample_medcalc",
+      "calculation_type": "eGFR",
+      "formula": "CKD-EPI 2021",
+      "unit": "mL/min/1.73m2",
+      "expected_value": 47.8
+    }
+  },
+  {
+    "question": "Calculate the serum anion gap for a patient with Na = 140 mEq/L, Cl = 102 mEq/L, and HCO3 = 22 mEq/L.",
+    "answer": "Anion gap = Na - (Cl + HCO3) = 140 - (102 + 22) = 16 mEq/L. The serum anion gap is 16 mEq/L.",
+    "metadata": {
+      "dataset": "sample_medcalc",
+      "calculation_type": "Anion Gap",
+      "unit": "mEq/L",
+      "expected_value": 16.0
+    }
+  },
+  {
+    "question": "Calculate the corrected QT interval (QTc via Bazett's formula) for a patient with a measured QT interval of 400 ms and an RR interval of 0.8 seconds (heart rate 75 bpm).",
+    "answer": "QTc = QT / sqrt(RR) = 400 / sqrt(0.8) = 447.2 ms. The corrected QT interval is 447.2 ms.",
+    "metadata": {
+      "dataset": "sample_medcalc",
+      "calculation_type": "QTc",
+      "formula": "Bazett",
+      "unit": "ms",
+      "expected_value": 447.2
+    }
+  },
+  {
+    "question": "Calculate the CHA2DS2-VASc stroke risk score for a 68-year-old female with a history of hypertension, diabetes mellitus, and a prior ischemic stroke.",
+    "answer": "Points: Congestive heart failure = 0, Hypertension = 1, Age 65-74 = 1, Diabetes = 1, Stroke/TIA = 2, Vascular disease = 0, Sex female = 1. Total CHA2DS2-VASc score = 6 points.",
+    "metadata": {
+      "dataset": "sample_medcalc",
+      "calculation_type": "CHA2DS2-VASc",
+      "unit": "points",
+      "expected_value": 6.0
+    }
+  },
+  {
+    "question": "Calculate the Glasgow Coma Scale (GCS) score for a head injury patient who opens eyes to speech (3), produces inappropriate words (3), and localizes to painful stimuli (5).",
+    "answer": "Eye response (E) = 3, Verbal response (V) = 3, Motor response (M) = 5. Total Glasgow Coma Scale score is 11 points.",
+    "metadata": {
+      "dataset": "sample_medcalc",
+      "calculation_type": "GCS",
+      "unit": "score",
+      "expected_value": 11.0
+    }
+  },
+  {
+    "question": "Calculate the hourly maintenance IV fluid rate using the standard 4-2-1 rule for a patient weighing 70 kg.",
+    "answer": "4 mL/kg/hr for first 10 kg (40 mL/hr) + 2 mL/kg/hr for second 10 kg (20 mL/hr) + 1 mL/kg/hr for remaining 50 kg (50 mL/hr) = 110 mL/hr. The maintenance fluid rate is 110 mL/hr.",
+    "metadata": {
+      "dataset": "sample_medcalc",
+      "calculation_type": "Maintenance Fluids",
+      "formula": "4-2-1 rule",
+      "unit": "mL/hr",
+      "expected_value": 110.0
+    }
+  },
+  {
+    "question": "Calculate the Body Mass Index (BMI) for an adult with a weight of 85 kg and height of 1.75 meters.",
+    "answer": "BMI = weight (kg) / height (m)^2 = 85 / (1.75^2) = 27.76 kg/m2. The calculated BMI is 27.8 kg/m2.",
+    "metadata": {
+      "dataset": "sample_medcalc",
+      "calculation_type": "BMI",
+      "unit": "kg/m2",
+      "expected_value": 27.8
+    }
+  },
+  {
+    "question": "Calculate the corrected serum sodium for a patient presenting with measured sodium of 130 mEq/L and serum glucose of 500 mg/dL (using Katz correction factor of 1.6 mEq/L per 100 mg/dL glucose over 100 mg/dL).",
+    "answer": "Corrected Sodium = Measured Na + 0.016 * (Glucose - 100) = 130 + 1.6 * 4 = 136.4 mEq/L.",
+    "metadata": {
+      "dataset": "sample_medcalc",
+      "calculation_type": "Corrected Sodium",
+      "unit": "mEq/L",
+      "expected_value": 136.4
+    }
+  },
+  {
+    "question": "Calculate the single oral acetaminophen dose for a 16 kg pediatric patient at a recommended weight-based dosing of 15 mg/kg.",
+    "answer": "Dose = 16 kg * 15 mg/kg = 240 mg. The recommended pediatric dose is 240 mg.",
+    "metadata": {
+      "dataset": "sample_medcalc",
+      "calculation_type": "Pediatric Dosage",
+      "unit": "mg",
+      "expected_value": 240.0
+    }
+  },
+  {
+    "question": "Calculate the Fractional Excretion of Sodium (FeNa) in percent given: Serum Na = 140 mEq/L, Serum Creatinine = 2.0 mg/dL, Urine Na = 35 mEq/L, and Urine Creatinine = 50 mg/dL.",
+    "answer": "FeNa = (Urine Na * Serum Cr) / (Serum Na * Urine Cr) * 100 = (35 * 2.0) / (140 * 50) * 100 = 70 / 7000 * 100 = 1.0%. The calculated FeNa is 1.0%.",
+    "metadata": {
+      "dataset": "sample_medcalc",
+      "calculation_type": "FeNa",
+      "unit": "%",
+      "expected_value": 1.0
+    }
+  },
+  {
+    "question": "Calculate the Mean Arterial Pressure (MAP) for a patient with blood pressure reading 120/80 mmHg.",
+    "answer": "MAP = DBP + 1/3 * (SBP - DBP) = 80 + 1/3 * (40) = 93.3 mmHg. The mean arterial pressure is 93.3 mmHg.",
+    "metadata": {
+      "dataset": "sample_medcalc",
+      "calculation_type": "MAP",
+      "unit": "mmHg",
+      "expected_value": 93.3
+    }
+  },
+  {
+    "question": "Calculate the Wells' Score for PE in a patient with clinical signs of DVT (3 points), heart rate 108 bpm (1.5 points), and no alternate diagnosis as likely as PE (3 points).",
+    "answer": "Total Wells Score = 3.0 + 1.5 + 3.0 = 7.5 points.",
+    "metadata": {
+      "dataset": "sample_medcalc",
+      "calculation_type": "Wells PE",
+      "unit": "points",
+      "expected_value": 7.5
+    }
+  }
+]

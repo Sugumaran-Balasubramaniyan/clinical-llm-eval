@@ -30,6 +30,7 @@ def test_init_all_supported_providers_defaults():
         "openai": "gpt-4o-mini",
         "anthropic": "claude-3-5-haiku-latest",
         "mistral": "mistral-small-latest",
+        "gemini": "gemini-2.5-flash",
         "ollama": "biomistral",
     }
     for provider_name, expected_model in providers.items():
@@ -52,6 +53,11 @@ def test_init_custom_judge_model():
     )
     assert ev_mistral.judge_model == "mistral-large-latest"
 
+    ev_gemini = LLMJudgeEvaluator(
+        provider="gemini", judge_model="gemini-1.5-pro"
+    )
+    assert ev_gemini.judge_model == "gemini-1.5-pro"
+
     ev_ollama = LLMJudgeEvaluator(provider="ollama", judge_model="meditron:7b")
     assert ev_ollama.judge_model == "meditron:7b"
 
@@ -68,6 +74,7 @@ def test_init_dummy_auth_clients_are_none():
             "OPENAI_API_" + "KEY": "dummy",
             "ANTHROPIC_API_" + "KEY": "dummy",
             "MISTRAL_API_" + "KEY": "dummy",
+            "GEMINI_API_" + "KEY": "dummy",
         },
     ):
         ev_o = LLMJudgeEvaluator(provider="openai")
@@ -78,6 +85,9 @@ def test_init_dummy_auth_clients_are_none():
 
         ev_m = LLMJudgeEvaluator(provider="mistral")
         assert ev_m._client is None
+
+        ev_g = LLMJudgeEvaluator(provider="gemini")
+        assert ev_g._client is None
 
 
 # ==========================================
@@ -396,6 +406,55 @@ def test_mock_ollama_generation():
     mock_connector.generate.assert_called_once()
 
 
+def test_mock_gemini_generation():
+    ev = LLMJudgeEvaluator(provider="gemini")
+    mock_client = MagicMock()
+    mock_resp = MagicMock()
+    mock_resp.text = """
+    ```json
+    {
+      "diagnostic_accuracy": 5,
+      "reasoning_quality": 4,
+      "completeness": 5,
+      "safety": 5,
+      "overall_score": 4.7,
+      "rationale": "Google Gemini judge validated clinical response."
+    }
+    ```
+    """
+    mock_client.models.generate_content.return_value = mock_resp
+    ev._client = mock_client
+
+    res = ev.score_detailed("Q", "Resp", "Ref")
+    assert res["overall_score"] == 4.7
+    assert res["diagnostic_accuracy"] == 5.0
+    assert "Google Gemini judge" in res["rationale"]
+    mock_client.models.generate_content.assert_called_once()
+
+
+def test_mock_gemini_legacy_generation():
+    ev = LLMJudgeEvaluator(provider="gemini")
+    mock_model = MagicMock(spec=["generate_content"])
+    mock_resp = MagicMock()
+    mock_resp.text = """
+    {
+      "diagnostic_accuracy": 4,
+      "reasoning_quality": 4,
+      "completeness": 4,
+      "safety": 5,
+      "overall_score": 4.2,
+      "rationale": "Legacy GenerativeModel evaluation."
+    }
+    """
+    mock_model.generate_content.return_value = mock_resp
+    ev._client = mock_model
+
+    res = ev.score_detailed("Q", "Resp", "Ref")
+    assert res["overall_score"] == 4.2
+    assert res["completeness"] == 4.0
+    mock_model.generate_content.assert_called_once()
+
+
 def test_mock_llm_exception_graceful_fallback():
     ev = LLMJudgeEvaluator(provider="openai")
     mock_client = MagicMock()
@@ -413,3 +472,4 @@ def test_mock_llm_exception_graceful_fallback():
     assert 1.0 <= res["overall_score"] <= 5.0
     assert "diagnostic_accuracy" in res
     assert "Heuristic evaluation" in res["rationale"]
+
