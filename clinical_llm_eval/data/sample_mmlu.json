@@ -1,0 +1,122 @@
+[
+  {
+    "question": "A 45-year-old male with a history of alcohol use disorder presents to the emergency department with confusion, horizontal nystagmus, and gait ataxia. On examination, he is disoriented to time and place. Which of the following vitamin deficiencies is the primary etiology of this presentation?\nA. Vitamin B1 (Thiamine)\nB. Vitamin B3 (Niacin)\nC. Vitamin B6 (Pyridoxine)\nD. Vitamin B12 (Cobalamin)\nAnswer:",
+    "options": {
+      "A": "Vitamin B1 (Thiamine)",
+      "B": "Vitamin B3 (Niacin)",
+      "C": "Vitamin B6 (Pyridoxine)",
+      "D": "Vitamin B12 (Cobalamin)"
+    },
+    "answer": "A. Vitamin B1 (Thiamine)",
+    "metadata": {
+      "benchmark": "mmlu_clinical",
+      "subject": "clinical_knowledge",
+      "domain": "neurology"
+    }
+  },
+  {
+    "question": "A 16-year-old tall, slender adolescent boy with arachnodactyly, pectus excavatum, and ectopia lentis presents for evaluation. Echocardiogram reveals aortic root dilatation. Which gene mutation is responsible for this condition?\nA. FBN1\nB. COL3A1\nC. TGFBR1\nD. NF1\nAnswer:",
+    "options": {
+      "A": "FBN1",
+      "B": "COL3A1",
+      "C": "TGFBR1",
+      "D": "NF1"
+    },
+    "answer": "A. FBN1",
+    "metadata": {
+      "benchmark": "mmlu_clinical",
+      "subject": "medical_genetics",
+      "domain": "cardiovascular_genetics"
+    }
+  },
+  {
+    "question": "A 34-year-old carpenter presents with tingling and numbness in the palmar surface of the thumb, index, and middle fingers, as well as weakness in thumb abduction. Percussion over the flexor retinaculum reproduces symptoms. Which nerve is compressed in this structure?\nA. Ulnar nerve\nB. Radial nerve\nC. Median nerve\nD. Musculocutaneous nerve\nAnswer:",
+    "options": {
+      "A": "Ulnar nerve",
+      "B": "Radial nerve",
+      "C": "Median nerve",
+      "D": "Musculocutaneous nerve"
+    },
+    "answer": "C. Median nerve",
+    "metadata": {
+      "benchmark": "mmlu_clinical",
+      "subject": "anatomy",
+      "domain": "musculoskeletal_neuroanatomy"
+    }
+  },
+  {
+    "question": "An unconscious 68-year-old woman is brought to the emergency department after a motor vehicle collision with severe internal hemorrhage requiring immediate laparotomy. No family or advance directive is available. What is the most appropriate legal and ethical basis for proceeding with surgery?\nA. Substituted judgment doctrine\nB. Emergency doctrine (implied consent)\nC. Therapeutic privilege\nD. Court-ordered temporary guardianship\nAnswer:",
+    "options": {
+      "A": "Substituted judgment doctrine",
+      "B": "Emergency doctrine (implied consent)",
+      "C": "Therapeutic privilege",
+      "D": "Court-ordered temporary guardianship"
+    },
+    "answer": "B. Emergency doctrine (implied consent)",
+    "metadata": {
+      "benchmark": "mmlu_clinical",
+      "subject": "professional_medicine",
+      "domain": "medical_ethics_and_jurisprudence"
+    }
+  },
+  {
+    "question": "A 24-year-old woman with type 1 diabetes presents with nausea, abdominal pain, deep rapid respirations (Kussmaul breathing), and fruity breath odor. Laboratory testing confirms diabetic ketoacidosis (DKA) with blood glucose 480 mg/dL and potassium 4.8 mEq/L. Along with IV fluid resuscitation, what is the initial pharmacotherapy of choice?\nA. Subcutaneous insulin glargine\nB. Intravenous regular insulin infusion\nC. Intravenous sodium bicarbonate\nD. Oral metformin\nAnswer:",
+    "options": {
+      "A": "Subcutaneous insulin glargine",
+      "B": "Intravenous regular insulin infusion",
+      "C": "Intravenous sodium bicarbonate",
+      "D": "Oral metformin"
+    },
+    "answer": "B. Intravenous regular insulin infusion",
+    "metadata": {
+      "benchmark": "mmlu_clinical",
+      "subject": "clinical_knowledge",
+      "domain": "endocrinology"
+    }
+  },
+  {
+    "question": "A 40-year-old man presents with progressive choreiform movements, depression, and cognitive decline. Genetic testing confirms an expanded CAG trinucleotide repeat sequence on chromosome 4p16.3. What genetic phenomenon accounts for earlier onset and increased severity in subsequent generations?\nA. Anticipation\nB. Incomplete penetrance\nC. Locus heterogeneity\nD. Genomic imprinting\nAnswer:",
+    "options": {
+      "A": "Anticipation",
+      "B": "Incomplete penetrance",
+      "C": "Locus heterogeneity",
+      "D": "Genomic imprinting"
+    },
+    "answer": "A. Anticipation",
+    "metadata": {
+      "benchmark": "mmlu_clinical",
+      "subject": "medical_genetics",
+      "domain": "neurogenetics"
+    }
+  },
+  {
+    "question": "During a femoral hernia repair, the surgeon identifies the femoral canal. What anatomical structure forms the medial boundary of the femoral ring?\nA. Femoral vein\nB. Inguinal ligament\nC. Lacunar (Gimbernat's) ligament\nD. Pectineal (Cooper's) ligament\nAnswer:",
+    "options": {
+      "A": "Femoral vein",
+      "B": "Inguinal ligament",
+      "C": "Lacunar (Gimbernat's) ligament",
+      "D": "Pectineal (Cooper's) ligament"
+    },
+    "answer": "C. Lacunar (Gimbernat's) ligament",
+    "metadata": {
+      "benchmark": "mmlu_clinical",
+      "subject": "anatomy",
+      "domain": "surgical_anatomy"
+    }
+  },
+  {
+    "question": "A 62-year-old competent adult patient diagnosed with operable Stage II colon cancer refuses recommended surgical resection after full discussion of risks, benefits, and prognosis. Which ethical principle dictates respecting the patient's decision?\nA. Non-maleficence\nB. Patient autonomy\nC. Beneficence\nD. Distributive justice\nAnswer:",
+    "options": {
+      "A": "Non-maleficence",
+      "B": "Patient autonomy",
+      "C": "Beneficence",
+      "D": "Distributive justice"
+    },
+    "answer": "B. Patient autonomy",
+    "metadata": {
+      "benchmark": "mmlu_clinical",
+      "subject": "professional_medicine",
+      "domain": "medical_ethics"
+    }
+  }
+]

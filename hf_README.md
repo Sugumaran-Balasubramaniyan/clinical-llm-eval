@@ -7,29 +7,31 @@ sdk: docker
 app_port: 8501
 pinned: false
 license: mit
-short_description: Clinical LLM benchmarking with safety & hallucination eval
+short_description: Clinical LLM benchmarking with USMLE MCQA, Safety & Radar Eval
 ---
 
 # 🏥 Clinical LLM Evaluation Framework
 
-A benchmarking framework for evaluating Large Language Model performance on clinical reasoning tasks.
+A production-grade benchmarking framework for evaluating Large Language Models on clinical reasoning, multiple-choice diagnostic accuracy (USMLE passing benchmark), patient safety, and contextual hallucination suppression.
 
 ## Features
-- 📊 **ROUGE-L scoring** — lexical overlap with gold-standard answers
-- 🧠 **LLM-as-Judge** — GPT-4o-mini reasoning quality scoring (1–5)
-- 🔍 **Hallucination detection** — entity-level fact drift analysis
-- 🛡️ **Safety flagging** — unsafe clinical advice detection
-- 🤖 **Multi-model support** — Mistral, GPT-4o, Claude 3
 
-## Usage
-Enter a clinical question + reference answer in **Single Question Mode** to evaluate any model instantly.
+- 🎯 **MCQA & USMLE Benchmark** — Option extraction and diagnostic accuracy tracking against the **60.0% USMLE passing standard**.
+- ⚡ **Async High-Throughput Engine** — High-concurrency async batch evaluation with request pacing and latency tracking.
+- 🧠 **Multi-Provider LLM-as-Judge** — Multi-provider structured clinical rubric (Diagnostic Accuracy, Reasoning Quality, Completeness, Safety) across OpenAI, Claude, Mistral, and Ollama.
+- 🛡️ **Categorized Safety & Red Flag Triage** — Evaluates emergency triage omissions, contraindicated medications (pediatric aspirin/Reye syndrome, pregnancy teratogens), and unhedged direct assertions across 4 severity tiers (`CRITICAL`, `HIGH`, `WARNING`, `SAFE`).
+- 🔬 **Contextual Fact Grounding** — Context-aware entity drift detector suppressing false positives on sound clinical reasoning.
+- 📚 **Comprehensive Benchmark Support** — Native pipelines for **MedQA (USMLE)**, **MMLU Clinical**, **Med-HALT**, **PubMedQA**, **MedMCQA**, and custom datasets.
+- 🕸️ **Interactive Dark-Mode Radar Profile** — 5-axis clinical performance visualization powered by Plotly and Chart.js.
 
-For batch evaluation across MedQA / PubMedQA / MedMCQA, add your API keys via the Spaces **Secrets** panel:
-- `MISTRAL_API_KEY`
-- `OPENAI_API_KEY`
-- `ANTHROPIC_API_KEY`
+## Usage Modes
+
+1. **Single Question Mode**: Test individual clinical QA pairs locally without any external configuration.
+2. **Batch Evaluation Mode**: Run automated multi-sample benchmarks across MedQA, MMLU Clinical, and Med-HALT to generate radar profiles.
+3. **Live Model Evaluation**: Compare active cloud and local LLM backends side-by-side.
 
 ## Links
-- 🔗 [GitHub Repo](https://github.com/Sugumaran-Balasubramaniyan/clinical-llm-eval)
+
+- 🔗 [GitHub Repository](https://github.com/Sugumaran-Balasubramaniyan/clinical-llm-eval)
 - 👤 [Portfolio](https://www.sugumaran-balasubramaniyan.com/)
 - 💼 [LinkedIn](https://www.linkedin.com/in/sugumaranbalasubramaniyan/)

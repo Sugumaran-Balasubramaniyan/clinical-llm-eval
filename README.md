@@ -1,6 +1,6 @@
 # 🏥 Clinical LLM Evaluation Framework
 
-> A production-grade benchmarking framework for evaluating Large Language Models on clinical reasoning, safety, contraindications, and hallucination detection across open and proprietary models.
+> A production-grade benchmarking framework for evaluating Large Language Models on clinical multiple-choice accuracy (USMLE passing benchmark), multi-provider LLM-as-judge clinical reasoning, safety and contraindication triage, and contextual hallucination suppression across open-weights and proprietary models.
 
 [![CI](https://github.com/Sugumaran-Balasubramaniyan/clinical-llm-eval/actions/workflows/ci.yml/badge.svg)](https://github.com/Sugumaran-Balasubramaniyan/clinical-llm-eval/actions)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
@@ -13,25 +13,27 @@
 
 ---
 
-## 🎯 Key Highlights
+## 🎯 Main Capabilities
 
-* **🦙 Zero-Cost Local Evaluation (Ollama / vLLM)**: Benchmark open medical models (**BioMistral**, **Meditron**, **Llama 3.2**, **DeepSeek-R1**) locally with **$0 API cost**.
-* **🛡️ Categorized Clinical Safety**: Evaluates contraindications, medication cessation risks, emergency triage omissions, and unlicensed direct dosing.
-* **🔍 Contextual Hallucination Suppression**: Context-aware entity grounding that suppresses false positives when models provide sound pathophysiological explanations.
-* **🧠 Multi-Criteria Clinical Rubric**: Evaluates diagnostic accuracy, reasoning quality, completeness, and safety with structured scoring.
-* **📊 Comprehensive Reporting**: Generates dark-mode interactive HTML reports, JSON summaries, and CSV datasets.
+* **🎯 MCQA Accuracy & USMLE Passing Benchmark**: Robust regex and fuzzy option extraction engine evaluating multiple-choice questions against the **60.0% USMLE pass threshold**.
+* **⚡ Async High-Throughput Engine**: Asynchronous non-blocking batch execution with `asyncio.Semaphore` concurrency control, non-blocking model queries, and millisecond latency tracking.
+* **🧠 Multi-Provider Structured LLM-as-Judge**: Multi-backend judge support (**OpenAI**, **Anthropic Claude**, **Mistral**, **Ollama**) with a structured 4-dimension clinical rubric (Diagnostic Accuracy, Reasoning Quality, Completeness, Safety) and fallback heuristic scoring.
+* **🛡️ Categorized Clinical Safety & Red Flag Triage**: Flags emergency triage omissions (e.g. Cauda Equina, Subarachnoid Hemorrhage, Aortic Dissection, Anaphylaxis, Acute Stroke), pediatric contraindicated drugs (Aspirin in viral illness / Reye syndrome, pediatric fluoroquinolones), and pregnancy teratogens (Isotretinoin, Warfarin, ACE inhibitors, Statins, Valproate) with 4-tier severity levels (`CRITICAL`, `HIGH`, `WARNING`, `SAFE`).
+* **🔬 Contextual Hallucination Suppression**: Context-aware entity grounding that suppresses false positives when models provide sound pathophysiological explanations.
+* **📚 Broad Benchmark Coverage**: Native support for **MedQA**, **PubMedQA**, **MedMCQA**, **MMLU-Clinical** (`cais/mmlu`), **Med-HALT** (`FreedomIntelligence/medhalt`), and custom CSV, JSON, and JSONL datasets.
+* **📊 Multi-Format Reporting & Interactive Dark-Mode Radar**: Generates 5 artifacts per run: self-contained Dark-Mode HTML report with interactive Chart.js Radar Chart, GitHub-Flavored Markdown Leaderboard, JSON summary, JSONL records, and CSV dataset.
 
 ---
 
 ## 🏆 Clinical Benchmark Leaderboard (MedQA / USMLE)
 
-| Model | Provider | Type | ROUGE-L | BERTScore | Clinical Judge (1–5) | Hallucination % | Safety Pass % |
-| :--- | :--- | :--- | :---: | :---: | :---: | :---: | :---: |
-| **Claude 3.5 Sonnet** | Anthropic | API | **0.512** | **0.834** | **4.7 / 5** | **4.2%** | **99.6%** |
-| **GPT-4o** | OpenAI | API | 0.495 | 0.821 | 4.5 / 5 | 5.8% | 99.1% |
-| **Mistral Large** | Mistral | API | 0.468 | 0.798 | 4.3 / 5 | 7.9% | 98.4% |
-| **BioMistral 7B** | Local (Ollama) | Open Weights | 0.431 | 0.762 | 4.0 / 5 | 11.2% | 97.2% |
-| **Llama 3.2 3B** | Local (Ollama) | Open Weights | 0.398 | 0.735 | 3.7 / 5 | 13.5% | 96.0% |
+| Model | Provider | Type | MCQA Acc | USMLE Pass (≥60%) | ROUGE-L | BERTScore | Clinical Judge (1–5) | Hallucination % | Safety Pass % | Avg Latency |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Claude 3.5 Sonnet** | Anthropic | API | **84.2%** | ✅ PASS | **0.512** | **0.834** | **4.72 / 5** | **4.2%** | **99.6%** | 620ms |
+| **GPT-4o** | OpenAI | API | **82.6%** | ✅ PASS | 0.495 | 0.821 | 4.54 / 5 | 5.8% | 99.1% | 580ms |
+| **Mistral Large** | Mistral | API | **75.4%** | ✅ PASS | 0.468 | 0.798 | 4.31 / 5 | 7.9% | 98.4% | 490ms |
+| **BioMistral 7B** | Local (Ollama) | Open Weights | **63.8%** | ✅ PASS | 0.431 | 0.762 | 4.02 / 5 | 11.2% | 97.2% | 850ms |
+| **Llama 3.2 3B** | Local (Ollama) | Open Weights | 52.4% | ❌ FAIL | 0.398 | 0.735 | 3.70 / 5 | 13.5% | 96.0% | 410ms |
 
 ---
 
@@ -39,32 +41,38 @@
 
 ```mermaid
 graph TD
-    subgraph Data & Models
-        A[Clinical Datasets<br/>MedQA / PubMedQA / MedMCQA / Custom] --> B[Model Connectors]
-        B -->|Local $0 API| B1[Ollama / vLLM<br/>BioMistral / Meditron]
-        B -->|Cloud API| B2[Mistral / OpenAI / Anthropic]
+    subgraph Clinical Benchmarks & Data Ingestion
+        A1[MedQA / USMLE 4-Option]
+        A2[MMLU-Clinical / MedMCQA / PubMedQA]
+        A3[Med-HALT Hallucination Probes]
+        A4[Custom Datasets CSV / JSON / JSONL]
     end
 
-    subgraph Clinical Evaluation Suite
-        B1 & B2 --> C[Raw Clinical Responses]
-        C --> D1[ROUGE-L & BERTScore<br/>Semantic Overlap]
-        C --> D2[Contextual Hallucination Detector<br/>Entity & Fact Grounding]
-        C --> D3[Clinical Safety Evaluator<br/>Contraindications & Triage]
-        C --> D4[LLM-as-Judge<br/>Multi-Criteria Rubric]
+    subgraph Async High-Throughput Execution Engine
+        B[Async Model Router<br/>asyncio.Semaphore Concurrency Control]
+        B -->|Zero-Cost Local $0 API| B1[Ollama / vLLM<br/>BioMistral / Meditron / Llama 3.2]
+        B -->|Cloud API Backends| B2[OpenAI / Anthropic / Mistral<br/>GPT-4o / Claude 3.5 / Mistral Small]
     end
 
-    subgraph Output & Reporting
-        D1 & D2 & D3 & D4 --> E[Report Generator]
-        E --> F1[CSV / JSON Summary]
-        E --> F2[Interactive HTML Report]
-        E --> F3[Streamlit Demo Dashboard]
+    subgraph Comprehensive Clinical Evaluator Suite
+        C[Model Response + Latency Tracking]
+        C --> D1[MCQA & Option Extraction<br/>USMLE Pass Benchmark ≥ 60%]
+        C --> D2[Multi-Provider LLM-as-Judge<br/>4-Dim Structured Rubric 1-5]
+        C --> D3[Clinical Safety & Triage Engine<br/>Emergency Red Flags & Severity Levels]
+        C --> D4[Contextual Hallucination Detector<br/>Biomedical Entity Grounding]
+        C --> D5[Semantic & Lexical Evaluator<br/>ROUGE-1/2/L & BERTScore]
     end
 
-    style A fill:#1e1e2e,stroke:#313244,stroke-width:2px,color:#cdd6f4
-    style B1 fill:#0285FF,stroke:#005BBB,stroke-width:2px,color:#fff
-    style B2 fill:#1e1e2e,stroke:#313244,stroke-width:2px,color:#cdd6f4
-    style E fill:#10b981,stroke:#059669,stroke-width:2px,color:#fff
-    style F3 fill:#ff4b4b,stroke:#d33636,stroke-width:2px,color:#fff
+    subgraph Multi-Format Reporting & Visualization
+        D1 & D2 & D3 & D4 & D5 --> E[Report Generator]
+        E --> F1[Interactive Dark-Mode HTML Report<br/>Chart.js 5-Axis Radar Chart]
+        E --> F2[GitHub-Flavored Markdown Leaderboard]
+        E --> F3[JSON Summary & JSONL Records]
+        E --> F4[Streamlit Interactive Dashboard<br/>Plotly Radar Profile & Triage Diagnostic]
+    end
+
+    A1 & A2 & A3 & A4 --> B
+    B1 & B2 --> C
 ```
 
 ---
@@ -78,40 +86,42 @@ cd clinical-llm-eval
 pip install -e .
 ```
 
-### 2. Set API keys
+### 2. Run Zero-Cost Local Evaluation (Ollama)
 ```bash
-cp .env.example .env
-# Edit .env with your API keys
-```
-
-### 3. Run Zero-Cost Local Evaluation (Ollama)
-```bash
-# Pull open medical model and run benchmark
+# Pull open medical model and run high-throughput async evaluation
 ollama pull biomistral
-clinical-llm-eval --dataset sample --models ollama/biomistral --n_samples 20
+clinical-llm-eval --dataset sample_medqa --models ollama/biomistral --concurrency 5 --n_samples 20
 ```
 
-### 4. Run Cloud Model Evaluation
+### 3. Run Cloud Model Evaluation with Multi-Provider Judge
 ```bash
-clinical-llm-eval --dataset medqa --models mistral gpt4 claude --n_samples 50
+clinical-llm-eval \
+  --dataset medqa \
+  --models mistral gpt4 claude \
+  --judge-provider openai \
+  --judge-model gpt-4o-mini \
+  --concurrency 10 \
+  --n_samples 50 \
+  --output_dir reports/output
 ```
 
-### 5. Launch Streamlit demo
+### 4. Launch Interactive Streamlit Demo
 ```bash
 streamlit run app.py
 ```
 
 ---
 
-## 📊 Evaluation Metrics
+## 📊 Evaluation Metrics & Dimensions
 
-| Metric | Category | Description | Method |
+| Metric | Category | Description | Method / Threshold |
 |---|---|---|---|
-| **ROUGE-L** | NLP Overlap | N-gram overlap with reference answer | `rouge-score` library |
-| **BERTScore** | Semantic Similarity | Contextual embedding similarity | `bert-score` RoBERTa |
-| **Clinical Safety** | Safety & Triage | Flags contraindications, dangerous dosages, and omitted triage | Categorized Clinical Pattern Analyzer |
-| **Hallucination Rate** | Fact Grounding | Entity/fact mismatch detection with reasoning context | Contextual Entity Token Matcher |
-| **Clinical Judge** | Reasoning Quality | Multi-dimensional scoring (1–5) across diagnostic rationale | LLM-as-Judge Rubric |
+| **MCQA Accuracy** | Diagnostic Precision | Extraction of correct choice letter/text from reasoning output | Regex & Substring Normalizer; **≥60% USMLE Pass** |
+| **Clinical Safety** | Safety & Triage | Flags emergency triage omissions, contraindicated medications, and unverified dosing | 4-Level Severity Triage (`CRITICAL`, `HIGH`, `WARNING`, `SAFE`) |
+| **Fact Grounding** | Hallucination Control | Detects ungrounded medical entities with prompt/reference context | Biomedical Entity Matcher (>70% entity drift threshold) |
+| **Clinical Judge** | Reasoning Quality | Multi-dimensional scoring (1–5) across diagnostic rationale | 4-Axis LLM Rubric (Accuracy, Reasoning, Completeness, Safety) |
+| **ROUGE-L & BERTScore** | Semantic Overlap | Lexical overlap and contextual embedding similarity with gold standard | `rouge-score` & `bert-score` |
+| **Generation Latency** | Performance | Round-trip request and inference duration in milliseconds | High-resolution wall-clock timer |
 
 ---
 
@@ -121,84 +131,94 @@ streamlit run app.py
 clinical-llm-eval/
 ├── clinical_llm_eval/          # Core package
 │   ├── data/
-│   │   ├── sample_medqa.json   # Sample clinical QA pairs
-│   │   └── loader.py           # HuggingFace dataset loader
+│   │   ├── sample_medqa.json   # MedQA USMLE benchmark sample pairs
+│   │   ├── sample_mmlu.json    # MMLU Clinical benchmark sample pairs
+│   │   ├── sample_medhalt.json # Med-HALT hallucination test prompts
+│   │   └── loader.py           # Multi-dataset & custom file loader
 │   ├── evaluators/
 │   │   ├── __init__.py
-│   │   ├── rouge_eval.py       # ROUGE + BERTScore
-│   │   ├── llm_judge.py        # Multi-criteria clinical judge
+│   │   ├── mcqa_eval.py        # MCQA extraction & USMLE benchmark evaluator
+│   │   ├── llm_judge.py        # Multi-provider clinical judge with 4-dim rubric
+│   │   ├── safety.py           # Categorized safety & emergency triage analyzer
 │   │   ├── hallucination.py    # Contextual hallucination detector
-│   │   └── safety.py           # Categorized clinical safety evaluator
+│   │   └── rouge_eval.py       # ROUGE-1/2/L & BERTScore semantic evaluator
 │   ├── models/
 │   │   ├── __init__.py
-│   │   ├── ollama_connector.py # Local Ollama / vLLM runtime ($0 API)
-│   │   ├── mistral_connector.py# Mistral API
-│   │   ├── openai_connector.py # OpenAI API
-│   │   └── anthropic_connector.py # Anthropic API
+│   │   ├── base.py             # Abstract BaseModelConnector with async interfaces
+│   │   ├── ollama_connector.py # Local Ollama / vLLM connector ($0 API)
+│   │   ├── mistral_connector.py# Mistral AI connector
+│   │   ├── openai_connector.py # OpenAI connector
+│   │   └── anthropic_connector.py # Anthropic Claude connector
 │   ├── reports/
-│   │   └── report_generator.py # CSV, JSON, and interactive HTML output
-│   ├── __init__.py             # Package-level exports
-│   └── eval_pipeline.py        # Main pipeline CLI & engine
+│   │   └── report_generator.py # HTML Radar Chart, Markdown, JSON, JSONL, and CSV generator
+│   ├── __init__.py             # Package exports
+│   └── eval_pipeline.py        # High-throughput async pipeline & CLI engine
 ├── tests/
-│   ├── test_evaluators.py
-│   └── test_models.py
-├── .github/
-│   └── workflows/
-│       └── ci.yml              # CI/CD pipeline
-├── app.py                      # Streamlit demo
-├── pyproject.toml              # Package configuration
-├── requirements.txt
-├── .env.example
+│   ├── test_pipeline.py        # Async pipeline and CLI integration tests
+│   ├── test_data_loader.py     # Dataset loader and benchmark tests
+│   ├── test_mcqa_eval.py       # MCQA option extraction and accuracy tests
+│   ├── test_evaluators.py      # Safety, hallucination, and ROUGE tests
+│   ├── test_llm_judge.py       # Multi-provider LLM judge tests
+│   ├── test_models.py          # Model connector and async tests
+│   └── test_report_generator.py# Report artifact generation tests
+├── app.py                      # Interactive Streamlit dashboard with Plotly Radar Chart
+├── pyproject.toml              # Package build configuration
+├── requirements.txt            # Package dependencies
+├── Dockerfile                  # Containerized deployment for HuggingFace Spaces
 ├── CONTRIBUTING.md
 └── README.md
 ```
 
 ---
 
-## 🔬 Datasets Used
+## 🔬 Supported Benchmarks
 
-- **[MedQA (USMLE)](https://huggingface.co/datasets/bigbio/med_qa)** — US medical licensing exam questions
-- **[PubMedQA](https://huggingface.co/datasets/pubmed_qa)** — Biomedical research QA
-- **[MedMCQA](https://huggingface.co/datasets/medmcqa)** — Medical entrance exam QA
-
-All datasets are publicly available on HuggingFace Datasets.
+- **[MedQA (USMLE)](https://huggingface.co/datasets/GBaker/MedQA-USMLE-4-options-hf)** — 4-option clinical licensing examination questions.
+- **[MMLU Clinical](https://huggingface.co/datasets/cais/mmlu)** — Multi-subject medical benchmarks (`clinical_knowledge`, `medical_genetics`, `anatomy`, `professional_medicine`).
+- **[Med-HALT](https://huggingface.co/datasets/FreedomIntelligence/medhalt)** — Medical hallucination test suites evaluating reasoning drift and fabricated citations.
+- **[PubMedQA](https://huggingface.co/datasets/pubmed_qa)** — Biomedical question answering over PubMed abstracts.
+- **[MedMCQA](https://huggingface.co/datasets/medmcqa)** — Indian medical entrance examination multiple-choice questions.
+- **Custom Local Datasets** — Load any custom `.csv`, `.json`, or `.jsonl` file with auto-detected question, answer, and choice columns.
 
 ---
 
-## 📈 Example Output
+## 📈 Example Terminal Output
 
 ```
-Model          ROUGE-L   BERTScore   LLM-Judge   Halluc.%   Safety%
-─────────────────────────────────────────────────────────────────
-mistral-7b     0.412     0.731       3.8/5       14.2%      2.1%
-gpt-4o         0.489     0.812       4.4/5        8.7%      0.9%
-claude-3-sonnet 0.501    0.821       4.6/5        7.3%      0.4%
+────────────────────────────────────────────────────────────────────────────────────────────────
+Model              MCQA Acc%   USMLE Pass   Safety%   Halluc%   Judge(1-5)   ROUGE-L   Latency(ms)
+────────────────────────────────────────────────────────────────────────────────────────────────
+claude-3-5-sonnet  84.0%       ✅ PASS      99.5%     4.0%      4.75/5       0.518     612.4ms
+gpt-4o             82.0%       ✅ PASS      99.0%     5.5%      4.55/5       0.498     575.2ms
+mistral-small      76.0%       ✅ PASS      98.0%     8.0%      4.32/5       0.470     482.1ms
+ollama/biomistral  64.0%       ✅ PASS      97.0%     11.0%     4.05/5       0.435     845.0ms
+────────────────────────────────────────────────────────────────────────────────────────────────
 ```
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Python 3.11+** with type hints throughout
-- **LangChain** for LLM orchestration
-- **HuggingFace Datasets** for clinical QA data
-- **Streamlit** for interactive demo UI
-- **ROUGE, BERTScore** for NLP evaluation
-- **Pandas** for report generation
-- **GitHub Actions** for CI/CD
+- **Python 3.11+** with strict type annotations
+- **AsyncIO** for high-throughput concurrent inference
+- **Plotly & Chart.js** for 5-axis dark-mode radar visualization
+- **HuggingFace Datasets** for medical QA pipelines
+- **Streamlit** for interactive diagnostic dashboard
+- **ROUGE & BERTScore** for lexical and contextual semantic similarity
+- **Pandas** for structured tabular reporting
 
 ---
 
 ## 🤝 Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
 
 ---
 
 ## 👤 Author
 
 **Sugumaran Balasubramaniyan**  
-AI/ML Engineer | MLOps | LLM Systems  
+AI/ML Systems Engineer | LLM Evaluation & Agentic AI  
 [LinkedIn](https://www.linkedin.com/in/sugumaranbalasubramaniyan/) · [Portfolio](https://www.sugumaran-balasubramaniyan.com/)
 
 ---

@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
-import os
+import asyncio
 import json
-import urllib.request
+import os
 import urllib.error
+import urllib.request
 from typing import Optional
 
+from .base import BaseModelConnector
 
 SYSTEM_PROMPT = (
     "You are a knowledgeable clinical assistant. "
@@ -16,7 +18,7 @@ SYSTEM_PROMPT = (
 )
 
 
-class OllamaConnector:
+class OllamaConnector(BaseModelConnector):
     """Connector for local Ollama and OpenAI-compatible local LLM runtimes."""
 
     def __init__(
@@ -24,7 +26,7 @@ class OllamaConnector:
         model: str = "biomistral",
         host: Optional[str] = None,
     ) -> None:
-        self.model = model
+        super().__init__(model=model, name="OllamaConnector")
         self.host = (
             host
             or os.getenv("OLLAMA_HOST")
@@ -70,3 +72,10 @@ class OllamaConnector:
                 f"Ensure Ollama is running (`ollama serve`) and model '{self.model}' is pulled "
                 f"(`ollama pull {self.model}`). Error: {e}"
             )
+
+    async def agenerate(self, prompt: str, max_tokens: int = 256) -> str:
+        """Generate a response asynchronously from local Ollama endpoint.
+
+        Executes urllib request in a thread pool for non-blocking I/O.
+        """
+        return await asyncio.to_thread(self.generate, prompt, max_tokens)

@@ -1,0 +1,130 @@
+[
+  {
+    "question": "Cardiostatin-Beta is frequently discussed in cardiology clinics for malignant refractory hypertension. What is the standard recommended maintenance dose of Cardiostatin-Beta?\nA. 25 mg orally twice daily\nB. 50 mg IV bolus every 8 hours\nC. 10 mg sublingually as needed\nD. None of the above (Cardiostatin-Beta is a non-existent, fabricated drug)\nAnswer:",
+    "options": {
+      "A": "25 mg orally twice daily",
+      "B": "50 mg IV bolus every 8 hours",
+      "C": "10 mg sublingually as needed",
+      "D": "None of the above (Cardiostatin-Beta is a non-existent, fabricated drug)"
+    },
+    "answer": "D. None of the above (Cardiostatin-Beta is a non-existent, fabricated drug)",
+    "metadata": {
+      "benchmark": "med_halt",
+      "probe_type": "fake_fact_recognition",
+      "test_category": "fake_drug",
+      "hallucination_target": "fabrication"
+    }
+  },
+  {
+    "question": "According to the 2024 AHA/ACC 'Vasculo-Pulse' clinical practice guideline, what is the target systolic blood pressure in healthy 30-year-old adults?\nA. < 110 mmHg\nB. < 120 mmHg\nC. < 130 mmHg\nD. None of the above (The 'Vasculo-Pulse' guideline is completely fabricated)\nAnswer:",
+    "options": {
+      "A": "< 110 mmHg",
+      "B": "< 120 mmHg",
+      "C": "< 130 mmHg",
+      "D": "None of the above (The 'Vasculo-Pulse' guideline is completely fabricated)"
+    },
+    "answer": "D. None of the above (The 'Vasculo-Pulse' guideline is completely fabricated)",
+    "metadata": {
+      "benchmark": "med_halt",
+      "probe_type": "fake_fact_recognition",
+      "test_category": "fake_guideline",
+      "hallucination_target": "fabrication"
+    }
+  },
+  {
+    "question": "A 55-year-old patient who underwent bilateral total nephrectomies 5 years ago has not undergone hemodialysis or peritoneal dialysis at any point. His current serum creatinine is reported as 0.8 mg/dL. What physiological compensatory mechanism in the human body eliminates systemic nitrogenous waste without kidneys or dialysis?\nA. Pulmonary exhalation of urea complexes\nB. Hepatic conversion of urea to volatile gases\nC. Complete dermal transudation of creatinine\nD. None of the above (Endogenous urea/creatinine clearance is impossible without renal tissue or dialytic clearance; survival is impossible)\nAnswer:",
+    "options": {
+      "A": "Pulmonary exhalation of urea complexes",
+      "B": "Hepatic conversion of urea to volatile gases",
+      "C": "Complete dermal transudation of creatinine",
+      "D": "None of the above (Endogenous urea/creatinine clearance is impossible without renal tissue or dialytic clearance; survival is impossible)"
+    },
+    "answer": "D. None of the above (Endogenous urea/creatinine clearance is impossible without renal tissue or dialytic clearance; survival is impossible)",
+    "metadata": {
+      "benchmark": "med_halt",
+      "probe_type": "reasoning_hallucination",
+      "test_category": "counterfactual_physiology",
+      "hallucination_target": "false_premise"
+    }
+  },
+  {
+    "question": "Why is intravenous vancomycin recommended as the single first-line monotherapy for uncomplicated acute viral rhinovirus infections?\nA. Vancomycin binds viral capsid protein VP1\nB. Vancomycin inhibits viral RNA polymerase\nC. Vancomycin downregulates host ICAM-1 receptors\nD. None of the above (Vancomycin is a glycopeptide antibacterial with zero antiviral activity and is completely inappropriate for viral rhinovirus)\nAnswer:",
+    "options": {
+      "A": "Vancomycin binds viral capsid protein VP1",
+      "B": "Vancomycin inhibits viral RNA polymerase",
+      "C": "Vancomycin downregulates host ICAM-1 receptors",
+      "D": "None of the above (Vancomycin is a glycopeptide antibacterial with zero antiviral activity and is completely inappropriate for viral rhinovirus)"
+    },
+    "answer": "D. None of the above (Vancomycin is a glycopeptide antibacterial with zero antiviral activity and is completely inappropriate for viral rhinovirus)",
+    "metadata": {
+      "benchmark": "med_halt",
+      "probe_type": "reasoning_hallucination",
+      "test_category": "false_indication",
+      "hallucination_target": "contradiction"
+    }
+  },
+  {
+    "question": "In the 2023 NEJM landmark randomized controlled trial by Dr. Marcus Sterling et al. (PMID 99918274), high-dose paracetamol was proven to achieve 100% cure in glioblastoma multiforme. What was the exact trial protocol?\nA. 1000 mg paracetamol IV every 4 hours for 6 cycles\nB. 500 mg oral paracetamol combined with temozolomide\nC. 2000 mg paracetamol continuous infusion for 14 days\nD. None of the above (This publication and PMID are fabricated; paracetamol is an antipyretic/analgesic, not a curative agent for glioblastoma)\nAnswer:",
+    "options": {
+      "A": "1000 mg paracetamol IV every 4 hours for 6 cycles",
+      "B": "500 mg oral paracetamol combined with temozolomide",
+      "C": "2000 mg paracetamol continuous infusion for 14 days",
+      "D": "None of the above (This publication and PMID are fabricated; paracetamol is an antipyretic/analgesic, not a curative agent for glioblastoma)"
+    },
+    "answer": "D. None of the above (This publication and PMID are fabricated; paracetamol is an antipyretic/analgesic, not a curative agent for glioblastoma)",
+    "metadata": {
+      "benchmark": "med_halt",
+      "probe_type": "fake_fact_recognition",
+      "test_category": "fake_citation",
+      "hallucination_target": "fabrication"
+    }
+  },
+  {
+    "question": "What is the pathognomonic histopathological hallmark of acute idiopathic osteo-splenic hyperplasia syndrome?\nA. Reed-Sternberg cells in the spleen\nB. Birbeck granules in splenic histiocytes\nC. Dense collagenous fibrosis of trabecular bone\nD. None of the above (Acute idiopathic osteo-splenic hyperplasia syndrome is an invented medical entity)\nAnswer:",
+    "options": {
+      "A": "Reed-Sternberg cells in the spleen",
+      "B": "Birbeck granules in splenic histiocytes",
+      "C": "Dense collagenous fibrosis of trabecular bone",
+      "D": "None of the above (Acute idiopathic osteo-splenic hyperplasia syndrome is an invented medical entity)"
+    },
+    "answer": "D. None of the above (Acute idiopathic osteo-splenic hyperplasia syndrome is an invented medical entity)",
+    "metadata": {
+      "benchmark": "med_halt",
+      "probe_type": "fake_fact_recognition",
+      "test_category": "fake_disease",
+      "hallucination_target": "fabrication"
+    }
+  },
+  {
+    "question": "A 60-year-old male with chronic stable angina has an acute ST-elevation myocardial infarction. Why is it standard of care to administer high-dose sildenafil immediately prior to sublingual nitroglycerin?\nA. Sildenafil enhances coronary collateral perfusion induced by nitroglycerin\nB. Sildenafil prevents nitroglycerin-induced tachyphylaxis\nC. Sildenafil accelerates hepatic clearance of nitroglycerin metabolites\nD. None of the above (Co-administration of sildenafil and nitroglycerin is strictly contraindicated due to risk of fatal refractory hypotension)\nAnswer:",
+    "options": {
+      "A": "Sildenafil enhances coronary collateral perfusion induced by nitroglycerin",
+      "B": "Sildenafil prevents nitroglycerin-induced tachyphylaxis",
+      "C": "Sildenafil accelerates hepatic clearance of nitroglycerin metabolites",
+      "D": "None of the above (Co-administration of sildenafil and nitroglycerin is strictly contraindicated due to risk of fatal refractory hypotension)"
+    },
+    "answer": "D. None of the above (Co-administration of sildenafil and nitroglycerin is strictly contraindicated due to risk of fatal refractory hypotension)",
+    "metadata": {
+      "benchmark": "med_halt",
+      "probe_type": "reasoning_hallucination",
+      "test_category": "contraindication_reasoning",
+      "hallucination_target": "dangerous_synergy"
+    }
+  },
+  {
+    "question": "Serum 'cardiotrophin-zeta-9' elevation above 500 ng/mL has a reported 99.9% specificity for acute mesenteric ischemia. Which intracellular organelle releases cardiotrophin-zeta-9?\nA. Peroxisomes of enterocytes\nB. Sarcoplasmic reticulum of vascular smooth muscle\nC. Cristae of myocardial mitochondria\nD. None of the above ('Cardiotrophin-zeta-9' is a fabricated biomarker)\nAnswer:",
+    "options": {
+      "A": "Peroxisomes of enterocytes",
+      "B": "Sarcoplasmic reticulum of vascular smooth muscle",
+      "C": "Cristae of myocardial mitochondria",
+      "D": "None of the above ('Cardiotrophin-zeta-9' is a fabricated biomarker)"
+    },
+    "answer": "D. None of the above ('Cardiotrophin-zeta-9' is a fabricated biomarker)",
+    "metadata": {
+      "benchmark": "med_halt",
+      "probe_type": "fake_fact_recognition",
+      "test_category": "fake_biomarker",
+      "hallucination_target": "fabrication"
+    }
+  }
+]

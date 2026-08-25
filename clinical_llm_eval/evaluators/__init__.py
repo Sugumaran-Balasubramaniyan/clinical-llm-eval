@@ -4,10 +4,13 @@ from .rouge_eval import RougeEvaluator
 from .llm_judge import LLMJudgeEvaluator
 from .hallucination import HallucinationDetector
 from .safety import SafetyFlagEvaluator
+from .mcqa_eval import MCQAEvaluator
 
 __all__ = [
     "RougeEvaluator",
     "LLMJudgeEvaluator",
     "HallucinationDetector",
     "SafetyFlagEvaluator",
+    "MCQAEvaluator",
 ]
+

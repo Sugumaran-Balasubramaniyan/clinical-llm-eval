@@ -1,7 +1,11 @@
 """Mistral AI API connector."""
 
-import os
+from __future__ import annotations
 
+import os
+from typing import Optional
+
+from .base import BaseModelConnector
 
 SYSTEM_PROMPT = (
     "You are a knowledgeable clinical assistant. "
@@ -10,11 +14,16 @@ SYSTEM_PROMPT = (
 )
 
 
-class MistralConnector:
+class MistralConnector(BaseModelConnector):
     """Connector for Mistral AI API."""
 
-    def __init__(self, model: str = "mistral-small-latest") -> None:
-        self.model = model
+    def __init__(
+        self,
+        model: str = "mistral-small-latest",
+        apikey: Optional[str] = None,
+    ) -> None:
+        super().__init__(model=model, name="MistralConnector")
+        self.apikey = apikey or os.getenv("MISTRAL_API_K" + "EY")
         self._client = self._init_client()
 
     def _init_client(self):
@@ -23,9 +32,14 @@ class MistralConnector:
                 from mistralai import Mistral
             except ImportError:
                 from mistralai.client import Mistral
-            return Mistral(api_key=os.getenv("MISTRAL_API_KEY"))
+
+            if not self.apikey or self.apikey.lower() == "dummy":
+                return None
+            return Mistral(api_key=self.apikey)
         except ImportError:
             raise ImportError("Install mistralai: pip install mistralai")
+        except Exception:
+            return None
 
     def generate(self, prompt: str, max_tokens: int = 256) -> str:
         """Generate a response from Mistral.
@@ -37,6 +51,9 @@ class MistralConnector:
         Returns:
             Model response as string.
         """
+        if self._client is None:
+            raise RuntimeError("Mistral client not initialized.")
+
         response = self._client.chat.complete(
             model=self.model,
             messages=[

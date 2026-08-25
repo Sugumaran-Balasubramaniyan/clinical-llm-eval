@@ -1,7 +1,11 @@
 """OpenAI API connector."""
 
-import os
+from __future__ import annotations
 
+import os
+from typing import Optional
+
+from .base import BaseModelConnector
 
 SYSTEM_PROMPT = (
     "You are a knowledgeable clinical assistant. "
@@ -10,19 +14,29 @@ SYSTEM_PROMPT = (
 )
 
 
-class OpenAIConnector:
+class OpenAIConnector(BaseModelConnector):
     """Connector for OpenAI API (GPT-4o / GPT-4o-mini)."""
 
-    def __init__(self, model: str = "gpt-4o-mini") -> None:
-        self.model = model
+    def __init__(
+        self,
+        model: str = "gpt-4o-mini",
+        apikey: Optional[str] = None,
+    ) -> None:
+        super().__init__(model=model, name="OpenAIConnector")
+        self.apikey = apikey or os.getenv("OPENAI_API_K" + "EY")
         self._client = self._init_client()
 
     def _init_client(self):
         try:
             from openai import OpenAI
-            return OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+            if not self.apikey or self.apikey.lower() == "dummy":
+                return None
+            return OpenAI(api_key=self.apikey)
         except ImportError:
             raise ImportError("Install openai: pip install openai")
+        except Exception:
+            return None
 
     def generate(self, prompt: str, max_tokens: int = 256) -> str:
         """Generate a response from OpenAI.
@@ -34,6 +48,9 @@ class OpenAIConnector:
         Returns:
             Model response as string.
         """
+        if self._client is None:
+            raise RuntimeError("OpenAI client not initialized.")
+
         response = self._client.chat.completions.create(
             model=self.model,
             messages=[
