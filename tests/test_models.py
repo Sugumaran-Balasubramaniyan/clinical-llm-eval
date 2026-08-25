@@ -279,7 +279,8 @@ def test_gemini_connector_mock_genai():
     """Verify GeminiConnector synchronous and asynchronous generation with google-genai style client."""
     from clinical_llm_eval.models.gemini_connector import GeminiConnector
 
-    connector = GeminiConnector(model="gemini-2.5-flash", apikey="mock-val")
+    connector = GeminiConnector(model="gemini-2.5-flash", apikey="dummy")
+    connector._sdk_type = "google-genai"
     mock_client = MagicMock()
     mock_resp = MagicMock()
     mock_resp.text = "Administer epinephrine intramuscularly."
@@ -313,7 +314,8 @@ def test_gemini_connector_mock_generativeai():
     """Verify GeminiConnector fallback generation with google.generativeai style client."""
     from clinical_llm_eval.models.gemini_connector import GeminiConnector
 
-    connector = GeminiConnector(model="gemini-1.5-pro", apikey="mock-val")
+    connector = GeminiConnector(model="gemini-1.5-pro", apikey="dummy")
+    connector._sdk_type = "google.generativeai"
     mock_client = MagicMock(spec=["generate_content", "generate_content_async"])
     mock_resp = MagicMock()
     mock_resp.text = "Order chest X-ray and sputum culture."
