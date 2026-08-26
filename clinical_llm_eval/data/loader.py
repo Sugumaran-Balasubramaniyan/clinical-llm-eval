@@ -21,6 +21,9 @@ DatasetName = Literal[
     "sample_medhalt",
     "sample_mmlu",
     "sample_medcalc",
+    "sample_ehr",
+    "ehr_vignettes",
+    "sample_ehr_vignettes",
 ]
 
 MMLU_CLINICAL_SUBJECTS = [
@@ -72,6 +75,7 @@ def load_dataset(name: str = "sample", n_samples: int = 50) -> list[dict[str, An
     Args:
         name: Dataset identifier ('medqa', 'pubmedqa', 'medmcqa', 'mmlu_clinical',
               'med_halt', 'sample', 'sample_medqa', 'sample_medhalt', 'sample_mmlu',
+              'sample_medcalc', 'sample_ehr', 'ehr_vignettes',
               or a path to .csv/.json/.jsonl).
         n_samples: Maximum number of samples to return.
 
@@ -91,6 +95,8 @@ def load_dataset(name: str = "sample", n_samples: int = 50) -> list[dict[str, An
         return _load_sample_data(n_samples, "sample_medhalt")
     elif lower_name in ("sample_medcalc", "sample_calc", "medcalc"):
         return _load_sample_data(n_samples, "sample_medcalc")
+    elif lower_name in ("sample_ehr", "ehr_vignettes", "sample_ehr_vignettes", "ehr"):
+        return _load_sample_data(n_samples, "sample_ehr")
 
     # 2. Local custom dataset file
     path = Path(clean_name)
@@ -122,6 +128,8 @@ def _load_sample_data(n_samples: int = 50, sample_type: str = "sample_medqa") ->
         target_file = data_dir / "sample_medhalt.json"
     elif sample_type in ("sample_medcalc", "medcalc", "sample_calc"):
         target_file = data_dir / "sample_medcalc.json"
+    elif sample_type in ("sample_ehr", "ehr_vignettes", "sample_ehr_vignettes", "ehr"):
+        target_file = data_dir / "sample_ehr_vignettes.json"
     else:
         target_file = data_dir / "sample_medqa.json"
 
@@ -131,12 +139,24 @@ def _load_sample_data(n_samples: int = 50, sample_type: str = "sample_medqa") ->
                 data = json.load(f)
             results = []
             for item in data[:n_samples]:
+                meta = item.get("metadata", {})
+                if not isinstance(meta, dict):
+                    meta = {"dataset": sample_type}
+                else:
+                    meta = dict(meta)
+                if "turns" in item and "turns" not in meta:
+                    meta["turns"] = item["turns"]
+                if "expected_diagnosis" in item and "expected_diagnosis" not in meta:
+                    meta["expected_diagnosis"] = item["expected_diagnosis"]
+                if "expected_plan" in item and "expected_plan" not in meta:
+                    meta["expected_plan"] = item["expected_plan"]
+
                 results.append(
                     _format_item(
                         question=item.get("question", ""),
                         answer=item.get("answer", ""),
                         options=_normalize_options_dict(item.get("options")),
-                        metadata=item.get("metadata", {"dataset": sample_type}),
+                        metadata=meta,
                     )
                 )
             return results
@@ -164,6 +184,25 @@ def _load_sample_data(n_samples: int = 50, sample_type: str = "sample_medqa") ->
                 "options": None,
                 "metadata": {"dataset": sample_type, "unit": "points", "expected_value": 6.0},
             },
+        ]
+    elif sample_type in ("sample_ehr", "ehr_vignettes", "sample_ehr_vignettes", "ehr"):
+        fallback_items = [
+            {
+                "question": "Multi-turn Clinical Triage Case 1: 58-year-old male with acute chest pain.\nTurn 1 (Chief Complaint): 58yo M with 2 hours of crushing substernal chest pressure.\nTurn 2 (Exam): BP 152/90, HR 62, RR 20.\nTurn 3 (Labs/ECG): 12-lead ECG shows ST elevation in II, III, aVF. Troponin 4.2 ng/mL.\nTurn 4: Generate SOAP note.",
+                "answer": "Subjective: 58yo M with crushing chest pain.\nObjective: BP 152/90, HR 62. ST elevation in II, III, aVF. Troponin 4.2 ng/mL.\nAssessment: Acute Inferior STEMI.\nPlan: Emergent Cath lab activation, aspirin, ticagrelor, heparin.",
+                "options": None,
+                "metadata": {
+                    "dataset": sample_type,
+                    "expected_diagnosis": "Inferior ST-Elevation Myocardial Infarction (STEMI)",
+                    "expected_plan": "Cath lab activation, aspirin, ticagrelor, heparin",
+                    "turns": [
+                        {"turn": 1, "role": "patient", "content": "Doctor, I have severe crushing chest pain."},
+                        {"turn": 2, "role": "clinician", "content": "Checking vitals and physical exam."},
+                        {"turn": 3, "role": "system", "content": "ECG shows ST elevation in II, III, aVF. Troponin elevated."},
+                        {"turn": 4, "role": "user", "content": "Generate a complete SOAP note."},
+                    ],
+                },
+            }
         ]
     else:
         fallback_items = [

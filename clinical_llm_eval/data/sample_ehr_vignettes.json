@@ -1,0 +1,232 @@
+[
+  {
+    "question": "Multi-turn Clinical Triage Case 1: 58-year-old male presenting with acute substernal chest pressure.\nTurn 1 (Chief Complaint): 58yo M with 2 hours of crushing substernal chest pressure radiating to left arm and jaw, accompanied by diaphoresis and nausea.\nTurn 2 (Review of Systems & Exam): BP 152/90 mmHg, HR 62 bpm, RR 20/min, SpO2 96%. Clear lungs bilaterally, S1/S2 present without murmurs.\nTurn 3 (Diagnostics & Labs): 12-lead ECG reveals 3mm ST-segment elevation in leads II, III, aVF with reciprocal depressions in I, aVL. Troponin I elevated at 4.2 ng/mL.\nTurn 4 (Assessment & SOAP Plan Request): Synthesize findings into a formal SOAP note with primary diagnosis and emergency management plan.",
+    "answer": "Subjective: 58-year-old male presents with 2 hours of acute, crushing substernal chest pressure radiating to the left arm and jaw, associated with nausea and diaphoresis. No prior history of CAD.\n\nObjective: Vitals: BP 152/90 mmHg, HR 62 bpm, RR 20/min, SpO2 96% on room air. Lungs clear to auscultation bilaterally. Heart: Regular rhythm, normal S1/S2, no murmurs or rubs. Diagnostics: 12-lead ECG demonstrates marked ST-segment elevation in leads II, III, and aVF with reciprocal ST depressions in I and aVL. High-sensitivity Troponin I is elevated at 4.2 ng/mL.\n\nAssessment: Acute Inferior ST-Elevation Myocardial Infarction (STEMI).\n\nPlan:\n1. Immediate Cath Lab activation for emergent primary percutaneous coronary intervention (PCI).\n2. Dual antiplatelet therapy: Aspirin 325 mg chewed immediately + Ticagrelor 180 mg loading dose.\n3. Anticoagulation: Unfractionated heparin IV bolus and continuous infusion.\n4. Nitroglycerin sublingual with caution (obtain right-sided ECG leads V3R/V4R to exclude RV infarction first).\n5. Continuous telemetry and transfer to Cardiac Care Unit (CCU) post-procedure.",
+    "expected_diagnosis": "Inferior ST-Elevation Myocardial Infarction (STEMI)",
+    "expected_plan": "Cath lab activation for emergent primary PCI, dual antiplatelet therapy (aspirin + ticagrelor), IV heparin anticoagulation, CCU admission",
+    "turns": [
+      {
+        "turn": 1,
+        "role": "patient",
+        "content": "Doctor, I have had severe crushing chest pain in the center of my chest for the last 2 hours. It feels like an elephant is sitting on me, and the pain goes down my left arm and up to my jaw. I am breaking out in a cold sweat and feel very nauseous."
+      },
+      {
+        "turn": 2,
+        "role": "clinician",
+        "content": "Do you have any shortness of breath or lightheadedness? Let us perform a targeted physical examination and check your vital signs immediately."
+      },
+      {
+        "turn": 2,
+        "role": "system",
+        "content": "Physical Exam: Alert, diaphoretic, mild distress. Vitals: BP 152/90 mmHg, HR 62 bpm, RR 20/min, SpO2 96% on room air. Cardiovascular: Regular rhythm, normal S1 and S2, no murmurs, gallops, or friction rubs. Pulmonary: Lungs clear to auscultation bilaterally without wheezes or crackles. Extremities: Warm, no peripheral edema, pulses 2+ bilaterally."
+      },
+      {
+        "turn": 3,
+        "role": "clinician",
+        "content": "Stat 12-lead ECG and emergency cardiac biomarker panel ordered."
+      },
+      {
+        "turn": 3,
+        "role": "system",
+        "content": "Diagnostic Results: 12-lead ECG shows sinus rhythm at 62 bpm with 3 mm ST-segment elevation in inferior leads (II, III, and aVF) with reciprocal ST depressions in leads I and aVL. High-sensitivity Troponin I: 4.2 ng/mL (reference < 0.04 ng/mL). Serum Creatinine: 1.0 mg/dL, Potassium: 4.1 mEq/L."
+      },
+      {
+        "turn": 4,
+        "role": "user",
+        "content": "Based on this multi-turn clinical progression, generate a comprehensive SOAP note including diagnostic assessment and emergency clinical plan."
+      }
+    ],
+    "metadata": {
+      "dataset": "sample_ehr",
+      "case_id": "ehr_case_001",
+      "specialty": "Cardiology",
+      "acuity": "Emergent",
+      "expected_diagnosis": "Inferior ST-Elevation Myocardial Infarction (STEMI)",
+      "expected_plan": "Cath lab activation for emergent primary PCI, dual antiplatelet therapy (aspirin + ticagrelor), IV heparin anticoagulation, CCU admission"
+    }
+  },
+  {
+    "question": "Multi-turn Clinical Triage Case 2: 67-year-old female with fever, productive cough, and pleuritic chest pain.\nTurn 1 (Chief Complaint): 67yo F presenting with 4 days of worsening fever, chills, productive cough with rust-colored sputum, and sharp right-sided chest pain.\nTurn 2 (Review of Systems & Exam): Temp 39.1°C (102.4°F), BP 100/62 mmHg, HR 108 bpm, RR 28/min, SpO2 89% on RA. Lungs show bronchial breath sounds and inspiratory crackles over right lower lobe.\nTurn 3 (Diagnostics & Labs): WBC 18,500/µL with left shift. Lactate 2.4 mmol/L, BUN 24 mg/dL. CXR shows dense right lower lobe alveolar consolidation. Sputum Gram stain: Gram-positive lancet-shaped diplococci.\nTurn 4 (Assessment & SOAP Plan Request): Formulate a structured SOAP note with primary diagnosis, severity stratification, and inpatient management plan.",
+    "answer": "Subjective: 67-year-old female presents with 4 days of acute onset high fevers, chills, shortness of breath, pleuritic right chest pain, and productive cough yielding rust-colored sputum. Past history of mild hypertension.\n\nObjective: Vitals: Temp 39.1°C, BP 100/62 mmHg, HR 108 bpm, RR 28/min, SpO2 89% on room air (corrects to 95% on 3L nasal cannula). Physical Exam: Ill-appearing, tachypneic. Pulmonary exam reveals dullness to percussion, increased tactile fremitus, bronchial breath sounds, and crackles in the right lower lung base. Labs: WBC 18,500/µL with 88% neutrophils, BUN 24 mg/dL, Creatinine 1.1 mg/dL, Lactate 2.4 mmol/L. Imaging: Chest X-ray demonstrates dense right lower lobe lobar consolidation. Sputum Gram stain shows abundant Gram-positive diplococci.\n\nAssessment: Severe Community-Acquired Pneumonia (CAP) caused by Streptococcus pneumoniae with elevated CURB-65 score (Score = 2).\n\nPlan:\n1. Hospital admission to general medical floor with close respiratory monitoring.\n2. Supplemental oxygen via nasal cannula titrated to maintain SpO2 ≥ 92%.\n3. Empiric IV antibiotic therapy: Ceftriaxone 1g IV daily plus Azithromycin 500mg IV daily.\n4. Intravenous fluid resuscitation with isotonic crystalloid (Normal Saline 500 mL bolus followed by maintenance).\n5. Blood cultures x2, repeat serum lactate in 4 hours, and antipyretics for fever control.",
+    "expected_diagnosis": "Community-Acquired Pneumonia (CAP)",
+    "expected_plan": "Hospital admission, supplemental oxygen, IV ceftriaxone and azithromycin, IV fluid hydration, blood cultures",
+    "turns": [
+      {
+        "turn": 1,
+        "role": "patient",
+        "content": "I have been shivering and burning up with a fever for 4 days. I have a terrible deep cough coughing up thick rust-colored phlegm, and every time I take a deep breath my right side hurts like a knife."
+      },
+      {
+        "turn": 2,
+        "role": "clinician",
+        "content": "Let us check your oxygen saturation, vital signs, and perform a thorough lung examination."
+      },
+      {
+        "turn": 2,
+        "role": "system",
+        "content": "Physical Exam: Febrile, tachypneic, moderate respiratory distress. Vitals: Temp 39.1°C (102.4°F), BP 100/62 mmHg, HR 108 bpm, RR 28/min, SpO2 89% on ambient air. Lungs: Dullness to percussion at the right base, increased tactile fremitus, bronchial breathing, and coarse inspiratory crackles over the right lower lobe. Clear on left."
+      },
+      {
+        "turn": 3,
+        "role": "clinician",
+        "content": "Ordering chest radiograph, complete blood count, blood cultures, sputum Gram stain/culture, and serum lactate."
+      },
+      {
+        "turn": 3,
+        "role": "system",
+        "content": "Diagnostics: Chest X-ray reveals confluent dense lobar consolidation in the right lower lobe with prominent air bronchograms. CBC: WBC 18,500/µL with 88% segmented neutrophils. BMP: BUN 24 mg/dL, Cr 1.1 mg/dL. Lactate: 2.4 mmol/L. Sputum Gram stain: Numerous neutrophils and Gram-positive lancet-shaped diplococci."
+      },
+      {
+        "turn": 4,
+        "role": "user",
+        "content": "Synthesize this clinical case into a full SOAP documentation note with diagnosis and evidence-based therapeutic plan."
+      }
+    ],
+    "metadata": {
+      "dataset": "sample_ehr",
+      "case_id": "ehr_case_002",
+      "specialty": "Pulmonology / Infectious Disease",
+      "acuity": "Urgent",
+      "expected_diagnosis": "Community-Acquired Pneumonia (CAP)",
+      "expected_plan": "Hospital admission, supplemental oxygen, IV ceftriaxone and azithromycin, IV fluid hydration, blood cultures"
+    }
+  },
+  {
+    "question": "Multi-turn Clinical Triage Case 3: 22-year-old female with Type 1 Diabetes presenting with nausea, vomiting, and abdominal pain.\nTurn 1 (Chief Complaint): 22yo F with T1DM presents with 2 days of nausea, persistent vomiting, diffuse abdominal pain, polyuria, and extreme fatigue after running out of insulin.\nTurn 2 (Review of Systems & Exam): Temp 37.0°C, BP 96/60 mmHg, HR 124 bpm, RR 30/min with deep, rapid Kussmaul respirations and fruity breath odor. Dry oral mucosa, sunken eyes, diffuse mild abdominal tenderness without rebound.\nTurn 3 (Diagnostics & Labs): Glucose 480 mg/dL, Na 132 mEq/L, K 5.2 mEq/L, Cl 96 mEq/L, HCO3 8 mEq/L. Anion Gap 28 mEq/L. ABG: pH 7.15, pCO2 24 mmHg. Serum beta-hydroxybutyrate 6.5 mmol/L, Urine ketones 4+.\nTurn 4 (Assessment & SOAP Plan Request): Construct a SOAP note detailing high anion gap acidosis, diagnosis, and ICU resuscitation protocol.",
+    "answer": "Subjective: 22-year-old female with known Type 1 Diabetes Mellitus presents with 48 hours of progressive nausea, vomiting, diffuse abdominal pain, severe thirst, polyuria, and weakness. Patient reports omitting insulin doses over the last 3 days due to lack of medication supply.\n\nObjective: Vitals: Temp 37.0°C, BP 96/60 mmHg, HR 124 bpm (sinus tachycardia), RR 30/min (deep Kussmaul breathing), SpO2 99% on RA. Physical Exam: Dehydrated, dry mucous membranes, fruity breath odor. Abdomen is soft with diffuse mild non-localized tenderness, no guarding or rebound. Labs: Serum Glucose: 480 mg/dL, Sodium: 132 mEq/L, Potassium: 5.2 mEq/L, Chloride: 96 mEq/L, Bicarbonate: 8 mEq/L. Anion Gap = 132 - (96 + 8) = 28 mEq/L. ABG: pH 7.15, pCO2 24 mmHg. Beta-hydroxybutyrate: 6.5 mmol/L. Urine ketones: 4+.\n\nAssessment: Severe Diabetic Ketoacidosis (DKA) with high anion gap metabolic acidosis and severe volume depletion triggered by insulin cessation.\n\nPlan:\n1. Admit patient to Intensive Care Unit (ICU).\n2. Vigorous IV hydration: 0.9% Normal Saline 1000 mL/hr for initial 1-2 hours, followed by 250-500 mL/hr tailored to hemodynamics.\n3. Continuous IV Regular Insulin infusion at 0.1 units/kg/hr.\n4. Serial lab monitoring: Basic metabolic panel, glucose, and venous blood gas every 1-2 hours.\n5. Potassium replacement: Add 20-30 mEq KCl per liter of IV fluid once serum potassium is < 5.2 mEq/L and urine output is established.\n6. When serum glucose drops below 200 mg/dL, switch IV fluids to D5W 0.45% NaCl while continuing insulin drip until anion gap closes.",
+    "expected_diagnosis": "Diabetic Ketoacidosis (DKA)",
+    "expected_plan": "ICU admission, aggressive IV fluid resuscitation (normal saline), continuous IV regular insulin infusion, serial potassium and anion gap monitoring, transition to dextrose fluids at glucose 200",
+    "turns": [
+      {
+        "turn": 1,
+        "role": "patient",
+        "content": "I have type 1 diabetes and ran out of my insulin 3 days ago. I feel terrible, I can't keep any fluids down, my stomach hurts all over, and I am breathing really fast and feeling dizzy."
+      },
+      {
+        "turn": 2,
+        "role": "clinician",
+        "content": "Let us check point-of-care capillary glucose, vital signs, and assess airway and hydration state immediately."
+      },
+      {
+        "turn": 2,
+        "role": "system",
+        "content": "Vitals: BP 96/60 mmHg, HR 124 bpm, RR 30/min, SpO2 99% on RA. Physical Exam: Somnolent but arousable, dry tongue and mucosa, reduced skin turgor. Distinct fruity breath odor. Kussmaul respirations noted. Abdomen soft with diffuse mild tenderness, normal bowel sounds."
+      },
+      {
+        "turn": 3,
+        "role": "clinician",
+        "content": "Ordering comprehensive metabolic panel, arterial blood gas, serum ketones, and urinalysis."
+      },
+      {
+        "turn": 3,
+        "role": "system",
+        "content": "Laboratory Findings: Blood Glucose: 480 mg/dL. Chemistry: Na 132 mEq/L, K 5.2 mEq/L, Cl 96 mEq/L, HCO3 8 mEq/L, BUN 32 mg/dL, Cr 1.4 mg/dL. Calculated Anion Gap: 28 mEq/L. ABG: pH 7.15, PaCO2 24 mmHg, PaO2 95 mmHg. Serum Beta-hydroxybutyrate: 6.5 mmol/L. Urine ketones: strongly positive (4+)."
+      },
+      {
+        "turn": 4,
+        "role": "user",
+        "content": "Create a structured SOAP documentation note covering subjective history, objective metabolic findings, assessment, and step-by-step ICU resuscitation protocol."
+      }
+    ],
+    "metadata": {
+      "dataset": "sample_ehr",
+      "case_id": "ehr_case_003",
+      "specialty": "Endocrinology / Critical Care",
+      "acuity": "Emergent",
+      "expected_diagnosis": "Diabetic Ketoacidosis (DKA)",
+      "expected_plan": "ICU admission, aggressive IV fluid resuscitation (normal saline), continuous IV regular insulin infusion, serial potassium and anion gap monitoring, transition to dextrose fluids at glucose 200"
+    }
+  },
+  {
+    "question": "Multi-turn Clinical Triage Case 4: 28-year-old male with migrating right lower quadrant abdominal pain.\nTurn 1 (Chief Complaint): 28yo M with 18 hours of abdominal pain that started around the umbilicus and migrated to the right lower quadrant, with anorexia and nausea.\nTurn 2 (Review of Systems & Exam): Temp 38.1°C (100.6°F), BP 122/78 mmHg, HR 90 bpm, RR 16/min. Abdominal exam shows localized tenderness at McBurney's point with guarding, rebound tenderness, and positive Rovsing sign.\nTurn 3 (Diagnostics & Labs): WBC 14,800/µL with 82% neutrophils. Contrast CT Abdomen/Pelvis reveals 9 mm dilated non-compressible appendix with wall thickening and periappendiceal fat stranding.\nTurn 4 (Assessment & SOAP Plan Request): Generate a full SOAP note with acute surgical diagnosis and preoperative management plan.",
+    "answer": "Subjective: 28-year-old previously healthy male presents with 18 hours of acute abdominal pain that began periumbilically and migrated to the right lower quadrant. Accompanied by anorexia, nausea, and low-grade fever. Denies urinary symptoms or diarrhea.\n\nObjective: Vitals: Temp 38.1°C, BP 122/78 mmHg, HR 90 bpm, RR 16/min, SpO2 98% on RA. Physical Exam: Abdomen is non-distended. Marked focal tenderness to palpation at McBurney's point with localized voluntary guarding and rebound tenderness. Positive Rovsing sign and positive Psoas sign. Labs: WBC 14,800/µL with 82% neutrophils. Urinalysis: Negative for leukocyte esterase and nitrites. Imaging: CT Abdomen/Pelvis with IV contrast demonstrates a distended appendix measuring 9 mm in outer diameter with circumferential wall thickening, hyperenhancement, and adjacent fat stranding.\n\nAssessment: Acute Appendicitis.\n\nPlan:\n1. Keep patient strictly NPO (nothing by mouth).\n2. Urgent General Surgery consultation for laparoscopic appendectomy.\n3. Intravenous fluid resuscitation with Lactated Ringer's solution at 125 mL/hr.\n4. Preoperative prophylactic IV antibiotics: Ceftriaxone 1g IV plus Metronidazole 500mg IV.\n5. Analgesia: IV Acetaminophen and IV opioid as needed for pain control.",
+    "expected_diagnosis": "Acute Appendicitis",
+    "expected_plan": "NPO, urgent surgical consultation for laparoscopic appendectomy, IV fluids (Lactated Ringer's), preoperative IV antibiotics (ceftriaxone + metronidazole), IV analgesia",
+    "turns": [
+      {
+        "turn": 1,
+        "role": "patient",
+        "content": "Yesterday afternoon I started having a dull ache around my belly button. Over the night the pain moved down to my lower right belly and got much sharper. Every bump during the car ride here hurt, and I have had zero appetite and felt like vomiting."
+      },
+      {
+        "turn": 2,
+        "role": "clinician",
+        "content": "Let us perform a targeted abdominal examination with peritoneal sign assessment."
+      },
+      {
+        "turn": 2,
+        "role": "system",
+        "content": "Physical Exam: Temp 38.1°C (100.6°F), BP 122/78 mmHg, HR 90 bpm, RR 16/min. Abdomen: Focal right lower quadrant tenderness with maximal tenderness over McBurney's point. Distinct localized guarding and rebound tenderness. Positive Rovsing sign (palpation of LLQ elicits pain in RLQ). Positive Psoas sign."
+      },
+      {
+        "turn": 3,
+        "role": "clinician",
+        "content": "Ordering stat complete blood count, urinalysis, and CT abdomen/pelvis with IV contrast."
+      },
+      {
+        "turn": 3,
+        "role": "system",
+        "content": "Diagnostics: CBC: WBC 14,800/µL with 82% neutrophils. Urinalysis: Normal. CT Abdomen/Pelvis: 9 mm dilated blind-ending tubular structure in the right lower quadrant with appendiceal wall thickening, mucosal hyperenhancement, and periappendiceal fat stranding."
+      },
+      {
+        "turn": 4,
+        "role": "user",
+        "content": "Provide a complete SOAP clinical summary document including acute diagnosis and preoperative surgical management."
+      }
+    ],
+    "metadata": {
+      "dataset": "sample_ehr",
+      "case_id": "ehr_case_004",
+      "specialty": "Surgery / Gastroenterology",
+      "acuity": "Urgent",
+      "expected_diagnosis": "Acute Appendicitis",
+      "expected_plan": "NPO, urgent surgical consultation for laparoscopic appendectomy, IV fluids (Lactated Ringer's), preoperative IV antibiotics (ceftriaxone + metronidazole), IV analgesia"
+    }
+  },
+  {
+    "question": "Multi-turn Clinical Triage Case 5: 71-year-old male with acute onset right hemiparesis and aphasia.\nTurn 1 (Chief Complaint): 71yo M brought in by EMS with sudden onset right-sided facial droop, right arm and leg weakness, and slurred/inability to speak, starting 75 minutes ago.\nTurn 2 (Review of Systems & Exam): BP 168/94 mmHg, HR 80 bpm, RR 18/min, SpO2 98%. Neurological exam shows expressive aphasia, right central facial droop, right arm strength 1/5, right leg strength 2/5, NIH Stroke Scale (NIHSS) score 14.\nTurn 3 (Diagnostics & Labs): Fingerstick glucose: 110 mg/dL. Non-contrast Head CT: No intracranial hemorrhage or established infarct. CT Angiogram: Occlusion of proximal left M1 segment of Middle Cerebral Artery.\nTurn 4 (Assessment & SOAP Plan Request): Formulate a SOAP note outlining hyperacute stroke evaluation, eligibility for thrombolysis and endovascular thrombectomy.",
+    "answer": "Subjective: 71-year-old male with history of hypertension and hyperlipidemia presents via EMS with sudden onset of right-sided weakness and severe speech difficulty starting 75 minutes prior to arrival. Last known normal is witnessed at 75 minutes ago. No history of recent head trauma, surgery, or active bleeding.\n\nObjective: Vitals: BP 168/94 mmHg, HR 80 bpm regular, RR 18/min, SpO2 98% on room air. Point-of-care Glucose: 110 mg/dL. Neurological Exam: Alert, severe expressive dysphasia, right facial droop with forehead sparing, right upper extremity motor power 1/5, right lower extremity 2/5, right hemisensory deficit, right homonymous hemianopia. NIHSS = 14 points. Diagnostics: Non-contrast Head CT reveals no acute intracranial hemorrhage, mass effect, or midline shift. CT Angiogram (CTA) demonstrates acute occlusion of the left M1 segment of the middle cerebral artery.\n\nAssessment: Acute Ischemic Stroke (Left MCA territory, M1 segment large vessel occlusion) within hyperacute therapeutic window (onset < 4.5 hours).\n\nPlan:\n1. Activate Code Stroke protocol.\n2. Administer IV Thrombolysis (IV Tenecteplase 0.25 mg/kg or Alteplase 0.9 mg/kg) immediately, as patient meets criteria and has no contraindications.\n3. Emergent transport to Neurointerventional suite for Endovascular Mechanical Thrombectomy for large vessel occlusion.\n4. Blood pressure management: Maintain BP < 180/105 mmHg before and after thrombolytic therapy.\n5. Admit to Neuro-ICU for serial neurological examinations (NIHSS monitoring), NPO status pending formal swallow evaluation, and hold antiplatelets/anticoagulants for 24 hours.",
+    "expected_diagnosis": "Acute Ischemic Stroke",
+    "expected_plan": "IV thrombolysis (tenecteplase/alteplase), emergent mechanical thrombectomy for LVO, maintain BP < 180/105, Neuro-ICU admission, serial NIHSS monitoring",
+    "turns": [
+      {
+        "turn": 1,
+        "role": "patient",
+        "content": "Patient's wife states: 'My husband was having breakfast 75 minutes ago when suddenly his speech became garbled and his right arm and leg went completely limp. He couldn't lift his coffee cup or smile on the right side.'"
+      },
+      {
+        "turn": 2,
+        "role": "clinician",
+        "content": "Activating Code Stroke team. Checking airway, blood glucose, vital signs, and performing immediate NIH Stroke Scale examination."
+      },
+      {
+        "turn": 2,
+        "role": "system",
+        "content": "Vitals: BP 168/94 mmHg, HR 80 bpm, RR 18/min, SpO2 98% on RA. Accu-Chek Glucose: 110 mg/dL. Neurological Exam: Alert. Expressive aphasia with intact comprehension of simple commands. Right lower facial droop. Right arm strength 1/5, right leg strength 2/5. Right sensory loss. Total NIHSS Score = 14 points."
+      },
+      {
+        "turn": 3,
+        "role": "clinician",
+        "content": "Stat non-contrast CT brain, CT angiography of head and neck, and coagulation panel."
+      },
+      {
+        "turn": 3,
+        "role": "system",
+        "content": "Diagnostics: Non-contrast Brain CT: No acute intracranial hemorrhage, no established hypoattenuation, ASPECTS score 10/10. CT Angiography: Abrupt cut-off/occlusion of the left middle cerebral artery proximal M1 segment. Coagulation profile: INR 1.0, Platelets 220,000/µL."
+      },
+      {
+        "turn": 4,
+        "role": "user",
+        "content": "Produce a comprehensive SOAP clinical encounter note outlining emergency diagnosis, thrombolysis eligibility, and endovascular intervention plan."
+      }
+    ],
+    "metadata": {
+      "dataset": "sample_ehr",
+      "case_id": "ehr_case_005",
+      "specialty": "Neurology / Emergency Medicine",
+      "acuity": "Emergent",
+      "expected_diagnosis": "Acute Ischemic Stroke",
+      "expected_plan": "IV thrombolysis (tenecteplase/alteplase), emergent mechanical thrombectomy for LVO, maintain BP < 180/105, Neuro-ICU admission, serial NIHSS monitoring"
+    }
+  }
+]

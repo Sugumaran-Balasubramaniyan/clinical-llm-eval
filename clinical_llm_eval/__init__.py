@@ -9,6 +9,8 @@ from clinical_llm_eval.evaluators.clinical_nli import ClinicalNLIEvaluator
 from clinical_llm_eval.evaluators.hallucination import HallucinationDetector
 from clinical_llm_eval.evaluators.llm_judge import LLMJudgeEvaluator
 from clinical_llm_eval.evaluators.mcqa_eval import MCQAEvaluator
+from clinical_llm_eval.evaluators.multiturn_eval import MultiTurnClinicalEvaluator
+from clinical_llm_eval.evaluators.robustness_eval import RobustnessEvaluator
 from clinical_llm_eval.evaluators.rouge_eval import RougeEvaluator
 from clinical_llm_eval.evaluators.safety import SafetyFlagEvaluator
 from clinical_llm_eval.eval_pipeline import (
@@ -28,6 +30,8 @@ __all__ = [
     "CalculationEvaluator",
     "CalibrationEvaluator",
     "ClinicalNLIEvaluator",
+    "RobustnessEvaluator",
+    "MultiTurnClinicalEvaluator",
     "run_evaluation",
     "run_evaluation_async",
     "run_benchmark",

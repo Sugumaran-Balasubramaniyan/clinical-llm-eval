@@ -8,6 +8,8 @@ from .mcqa_eval import MCQAEvaluator
 from .calculation_eval import CalculationEvaluator
 from .calibration_eval import CalibrationEvaluator
 from .clinical_nli import ClinicalNLIEvaluator
+from .multiturn_eval import MultiTurnClinicalEvaluator
+from .robustness_eval import RobustnessEvaluator
 
 __all__ = [
     "RougeEvaluator",
@@ -18,5 +20,6 @@ __all__ = [
     "CalculationEvaluator",
     "CalibrationEvaluator",
     "ClinicalNLIEvaluator",
+    "MultiTurnClinicalEvaluator",
+    "RobustnessEvaluator",
 ]
-
